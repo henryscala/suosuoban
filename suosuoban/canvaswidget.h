@@ -21,6 +21,7 @@ public:
 
 private:
     Ui::CanvasWidget *ui;
+
     bool isMouseDown;
     PolyLine *currPath;
     PolyLineCluster *currCluster;

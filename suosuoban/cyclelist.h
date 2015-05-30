@@ -1,6 +1,10 @@
 #ifndef CYCLELIST_H
 #define CYCLELIST_H
 
+#include <cstdio>
+
+using namespace std;
+
 template <typename T> class  Node{
 public:
     T value;
@@ -85,18 +89,27 @@ public:
                 head = head->next;
             }
         }
-
+        node->next = NULL;
+        node->prev = NULL;
         size --;
     }
-    void removeAndFree(Node<T>* node){
-        remove(node);
-        delete(node);
-    }
-    void removeAndFreeAll(){
-        while (head!=0){
-            removeAndFree(head);
+
+    void clear(){
+        while (head ){
+            remove(head);
         }
     }
+
+//who allocate, who free
+//    void removeAndFree(Node<T>* node){
+//        remove(node);
+//        delete(node);
+//    }
+//    void removeAndFreeAll(){
+//        while (head!=0){
+//            removeAndFree(head);
+//        }
+//    }
 
 
 };

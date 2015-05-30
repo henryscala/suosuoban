@@ -1,18 +1,20 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2015-05-29T20:18:06
+# Project created by QtCreator 2015-05-30T21:52:11
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += widgets testlib
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+TARGET = tst_testsuosuoban
+CONFIG   += console
+CONFIG   -= app_bundle
 
-TARGET = suosuoban
 TEMPLATE = app
 
+INCLUDEPATH += ..\\suosuoban
 
-SOURCES += main.cpp\
+SOURCES += \
         mainwindow.cpp \
     cyclelist.cpp \
     vec2.cpp \
@@ -27,5 +29,5 @@ HEADERS  += mainwindow.h \
     geom.h \
     config.h
 
-FORMS    += mainwindow.ui \
-    canvaswidget.ui
+SOURCES += tst_testsuosuoban.cpp
+DEFINES += SRCDIR=\\\"$$PWD/\\\"

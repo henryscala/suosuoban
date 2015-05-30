@@ -7,7 +7,7 @@
 typedef Vec2<double> VecDouble;
 typedef Vec2<int> VecInt;
 typedef CycleList< Vec2<double> > PolyLine;
-typedef CycleList<PolyLine> PolyLineCluster;
+typedef CycleList<PolyLine*> PolyLineCluster;
 
 
 VecInt vecDouble2vecInt(VecDouble);
