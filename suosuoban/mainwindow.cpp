@@ -12,10 +12,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
-    scrollArea = new QScrollArea();
-    scrollArea->setWidget(canvasWidget);
+    //scrollArea = new QScrollArea();
+    //scrollArea->setWidget(canvasWidget);
 
-    this->setCentralWidget(scrollArea);
+    //this->setCentralWidget(scrollArea);
+
+    setCentralWidget(ui->graphicsView);
     //QVBoxLayout* vBoxLayout = new QVBoxLayout();
     //vBoxLayout->addWidget(canvasWidget,0,Qt::AlignVCenter);
     //setLayout(vBoxLayout);
