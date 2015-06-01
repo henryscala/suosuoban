@@ -14,6 +14,10 @@ Config::~Config()
 
 }
 
+int Config::defaultPenWidth(){
+    return settings->value("canvas/penwidth",3).toInt();
+}
+
 double Config::minGap()
 {
     return settings->value("geometry/mingap",6).toDouble();

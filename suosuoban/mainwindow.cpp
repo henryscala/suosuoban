@@ -7,21 +7,15 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    canvasWidget = new CanvasWidget();
+    scene = new CanvasScene(this);
+    scene->setSceneRect(QRectF(0, 0, 5000, 5000));
 
 
+    view = new QGraphicsView(scene);
 
-
-    //scrollArea = new QScrollArea();
-    //scrollArea->setWidget(canvasWidget);
-
-    //this->setCentralWidget(scrollArea);
-
-    setCentralWidget(ui->graphicsView);
-    //QVBoxLayout* vBoxLayout = new QVBoxLayout();
-    //vBoxLayout->addWidget(canvasWidget,0,Qt::AlignVCenter);
-    //setLayout(vBoxLayout);
-
+    setCentralWidget(view);
+    setWindowTitle(tr("Suosuoban"));
+    setUnifiedTitleAndToolBarOnMac(true);
 }
 
 MainWindow::~MainWindow()
@@ -30,5 +24,5 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event){
-    canvasWidget->setGeometry( this->geometry() );
+
 }

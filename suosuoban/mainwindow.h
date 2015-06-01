@@ -2,8 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "canvaswidget.h"
+
 #include <QtWidgets>
+#include "canvasscene.h"
 
 namespace Ui {
 class MainWindow;
@@ -20,8 +21,10 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    CanvasWidget *canvasWidget;
-    QScrollArea *scrollArea;
+
+    CanvasScene* scene;
+    QGraphicsView* view;
+
 };
 
 #endif // MAINWINDOW_H

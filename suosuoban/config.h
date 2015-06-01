@@ -11,7 +11,7 @@ private:
     ~Config();
 public:
     double minGap();
-
+    int defaultPenWidth();
     static Config *instance();
 };
 

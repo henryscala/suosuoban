@@ -18,14 +18,18 @@ SOURCES += main.cpp\
     vec2.cpp \
     canvaswidget.cpp \
     geom.cpp \
-    config.cpp
+    config.cpp \
+    canvasscene.cpp \
+    qmypathitem.cpp
 
 HEADERS  += mainwindow.h \
     cyclelist.h \
     vec2.h \
     canvaswidget.h \
     geom.h \
-    config.h
+    config.h \
+    canvasscene.h \
+    qmypathitem.h
 
 FORMS    += mainwindow.ui \
     canvaswidget.ui
