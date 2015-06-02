@@ -16,7 +16,7 @@ Config::~Config()
 
 int Config::contourPadding()
 {
-    return settings->value("geometry/contourpadding",10).toInt();
+    return settings->value("geometry/contourpadding",16).toInt();
 }
 
 int Config::penWidth(){

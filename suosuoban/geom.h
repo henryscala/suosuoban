@@ -35,5 +35,6 @@ QRectF calcEncloseRect(const QList<QPointF> &points);
 
 qreal abs(QPointF p);
 qreal distance(QPointF p1, QPointF p2);
+QPointF normalize(QPointF p);
 
 #endif // GEOM_H

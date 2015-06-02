@@ -19,6 +19,7 @@ CanvasScene::~CanvasScene()
 {
     delete gridBlackLevel;
     allPathItems.clear();
+    allCircleItems.clear();
 }
 
 
@@ -83,6 +84,7 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
         }
     }
 
+
     currPathItem->addPoint(currPosF);
     currPathItem->setSelfPath();
 
@@ -106,7 +108,7 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     }
     currPathItem = NULL;
     isMouseDown = false;
-
+    calcContour();
 
     QGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
@@ -117,9 +119,41 @@ void CanvasScene::calcContour()
     for (i=0;i<allPathItems.size();i++){
         QMyPathItem* pathItem = allPathItems[i];
         int k;
-        for (k=0;k<pathItem->points.size();k++){
-            QPointF point = pathItem->points[k];
-            fillCircle(point,Config::instance()->contourPadding(),*gridBlackLevel);
+        for (k=0;k<pathItem->points.size()-1;k++){
+            QPointF pointFrom = pathItem->points[k];
+            QPointF pointTo = pathItem->points[k+1];
+            QPointF lineVector = pointTo - pointFrom;
+            QPointF lineUnitVector = normalize(lineVector);
+            int length = abs(lineVector);
+            int r;
+            for (r=0;r<length;r++){
+                QPointF point = pointFrom + r * lineUnitVector;
+                fillCircle(point,Config::instance()->contourPadding(),*gridBlackLevel);
+            }
+
         }
     }
+
+    for (i=0;i<allCircleItems.size();i++){
+        this->removeItem(allCircleItems[i]);
+        delete allCircleItems[i];
+    }
+    allCircleItems.clear();
+
+    int x,y;
+    for (x=0;x<gridBlackLevel->xsize;x++) {
+        for (y=0;y<gridBlackLevel->ysize;y++){
+            unsigned char blackLevel = gridBlackLevel->getValue(x,y);
+            if (blackLevel>0){
+
+                //using a circle to simulate point
+                QPointF point(x,y);
+                QRectF rect=calcEncloseRect(point,1);
+                QGraphicsEllipseItem *circleItem = this->addEllipse(rect);
+                allCircleItems.append(circleItem);
+
+            }
+        }
+    }
+
 }

@@ -90,3 +90,11 @@ qreal distance(QPointF p1, QPointF p2){
     return abs(p);
 }
 
+QPointF normalize(QPointF p){
+
+    qreal a = abs(p);
+    if(a<=EPSILON){
+        return p;
+    }
+    return QPointF(p.x()/a,p.y()/a);
+}
