@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     geom.cpp \
     config.cpp \
     canvasscene.cpp \
-    qmypathitem.cpp
+    qmypathitem.cpp \
+    grid.cpp
 
 HEADERS  += mainwindow.h \
     cyclelist.h \
@@ -29,7 +30,8 @@ HEADERS  += mainwindow.h \
     geom.h \
     config.h \
     canvasscene.h \
-    qmypathitem.h
+    qmypathitem.h \
+    grid.h
 
 FORMS    += mainwindow.ui \
     canvaswidget.ui

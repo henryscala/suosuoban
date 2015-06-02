@@ -11,8 +11,11 @@ private:
     ~Config();
 public:
     double minGap();
-    int defaultPenWidth();
+    int penWidth();
+    int contourPadding();
     static Config *instance();
 };
+
+
 
 #endif // CONFIG_H

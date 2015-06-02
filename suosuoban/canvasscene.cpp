@@ -10,10 +10,14 @@ CanvasScene::CanvasScene(QObject *parent)
 {
     currPathItem = NULL;
     isMouseDown = false;
+
+    gridBlackLevel = NULL;
+
 }
 
 CanvasScene::~CanvasScene()
 {
+    delete gridBlackLevel;
     allPathItems.clear();
 }
 
@@ -21,8 +25,24 @@ CanvasScene::~CanvasScene()
 
 void CanvasScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    if (mouseEvent->button() != Qt::LeftButton)
+    if (mouseEvent->button() != Qt::LeftButton){
         return;
+    }
+
+    //lazy init because the size of sceneRect is unknown when CanvasScene is created.
+    //consider dynamically change gridBlackLevel according to resizeEvent in future.
+    if(!gridBlackLevel){
+        QRectF selfRect = this->sceneRect();
+        gridBlackLevel = new Grid<unsigned char>(selfRect.width(),selfRect.height());
+        int x;
+        int y;
+        for (x=0;x<gridBlackLevel->xsize;x++){
+            for (y=0;y<gridBlackLevel->ysize;y++){
+                gridBlackLevel->setValue(x,y,0);
+            }
+        }
+    }
+
     isMouseDown = true;
     cout << "mouse down" << endl;
 
@@ -32,7 +52,7 @@ void CanvasScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
     currPathItem = new QMyPathItem();
     this->addItem(currPathItem);
     QPen defaultPen ;
-    defaultPen.setWidth(Config::instance()->defaultPenWidth());
+    defaultPen.setWidth(Config::instance()->penWidth());
     currPathItem->setPen(defaultPen);
 
 
@@ -50,14 +70,14 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
     }
 
     QPointF currPosF = mouseEvent->scenePos();
-    VecDouble currPos = qpointf2vecDouble(currPosF);
+
 
 
 
     if (currPathItem->points.size() > 0) {
         QPointF lastPosF = currPathItem->points.last();
-        VecDouble lastPos = qpointf2vecDouble(lastPosF);
-        double gap = (lastPos - currPos).abs();
+
+        qreal gap = abs(currPosF-lastPosF);
         if (gap < Config::instance()->minGap() ){
             return;
         }
@@ -91,3 +111,15 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     QGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
 
+void CanvasScene::calcContour()
+{
+    int i;
+    for (i=0;i<allPathItems.size();i++){
+        QMyPathItem* pathItem = allPathItems[i];
+        int k;
+        for (k=0;k<pathItem->points.size();k++){
+            QPointF point = pathItem->points[k];
+            fillCircle(point,Config::instance()->contourPadding(),*gridBlackLevel);
+        }
+    }
+}

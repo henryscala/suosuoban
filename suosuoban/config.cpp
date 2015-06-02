@@ -14,7 +14,12 @@ Config::~Config()
 
 }
 
-int Config::defaultPenWidth(){
+int Config::contourPadding()
+{
+    return settings->value("geometry/contourpadding",10).toInt();
+}
+
+int Config::penWidth(){
     return settings->value("canvas/penwidth",3).toInt();
 }
 
