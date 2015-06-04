@@ -6,6 +6,9 @@
 
 #include "geom.h"
 
+typedef QList<QMyPathItem*> PathCluster;
+typedef QList<PathCluster*> PathClusters;
+
 class CanvasScene: public QGraphicsScene
 {
     Q_OBJECT
@@ -18,9 +21,10 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
 
     void calcContour();
+    void addPathItem(QMyPathItem* pathItem);
 private:
     QMyPathItem* currPathItem;
-    QList<QMyPathItem*> allPathItems;
+    PathClusters pathClusters;
 
     bool isMouseDown;
 

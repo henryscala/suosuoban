@@ -17,8 +17,22 @@ CanvasScene::CanvasScene(QObject *parent)
 
 CanvasScene::~CanvasScene()
 {
+    //
+    delete currPathItem;
 
-    allPathItems.clear();
+    //release resources in pathClusters
+    PathCluster* cluster;
+    QMyPathItem* pathItem;
+    int i,k;
+    for (i=0;i<pathClusters.size();i++){
+        cluster = pathClusters[i];
+        for (k=0;k<cluster->size();k++){
+            pathItem = (*cluster)[k];
+            delete pathItem;
+        }
+        delete cluster;
+    }
+    pathClusters.clear();
 
 }
 
@@ -102,7 +116,7 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
     if (currPathItem){
         if (currPathItem->points.size() >1){
-            allPathItems.append(currPathItem);
+            addPathItem(currPathItem);
         } else {
             delete currPathItem;
         }
@@ -118,4 +132,18 @@ void CanvasScene::calcContour()
 {
 
 
+}
+
+void CanvasScene::addPathItem(QMyPathItem *pathItem)
+{
+    PathCluster* cluster;
+    if (pathClusters.size()<=0){
+        cluster = new PathCluster;
+        pathClusters.append(cluster);
+    } else {
+        cluster = pathClusters[0];
+    }
+
+
+    cluster->append(currPathItem);
 }
