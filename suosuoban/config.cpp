@@ -28,6 +28,11 @@ double Config::minGap()
     return settings->value("geometry/mingap",6).toDouble();
 }
 
+double Config::minAngle()
+{
+    return settings->value("geometry/minangle",9).toDouble();
+}
+
 Config* Config::instance(){
     if (!config){
         config = new Config();

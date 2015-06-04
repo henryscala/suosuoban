@@ -11,6 +11,7 @@ private:
     ~Config();
 public:
     double minGap();
+    double minAngle();//in degree not radian
     int penWidth();
     int contourPadding();
     static Config *instance();

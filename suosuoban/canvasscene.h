@@ -21,9 +21,9 @@ protected:
 private:
     QMyPathItem* currPathItem;
     QList<QMyPathItem*> allPathItems;
-    QList<QGraphicsEllipseItem*> allCircleItems;//for contour test
+
     bool isMouseDown;
-    Grid<unsigned char> *gridBlackLevel;
+
 };
 
 

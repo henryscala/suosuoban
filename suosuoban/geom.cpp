@@ -1,4 +1,6 @@
 #include "geom.h"
+#include <cmath>
+using namespace std;
 
 VecInt vecDouble2vecInt(VecDouble vd){
     VecInt res;
@@ -97,4 +99,41 @@ QPointF normalize(QPointF p){
         return p;
     }
     return QPointF(p.x()/a,p.y()/a);
+}
+
+/*return equivalent positive angle
+     *  acos return values [0,pi], while asin return values [-PI/2,PI/2], but I want [0,2PI]
+     */
+qreal positiveAngle(QPointF v) {
+    v = normalize(v);
+    qreal cosV = v.x();
+    qreal sinV = v.y();
+    if (cosV > 0 && sinV > 0) {//first quadrant
+        return acos(cosV);
+    }
+    if (cosV < 0 && sinV > 0) {//second quadrant
+        return acos(cosV);
+    }
+    if (cosV < 0 && sinV < 0) {//third quadrant
+        return PI + acos(-cosV);
+    }
+    if (cosV > 0 && sinV < 0) {//fourth quadrant
+        return PI + PI - acos(cosV);
+    }
+    if (cosV == 0 && sinV != 0) {
+        if (sinV > 0) {
+            return PI / 2;
+        } else {
+            return PI * 3 / 2;
+        }
+    }
+    if (cosV != 0 && sinV == 0) {
+        if (cosV > 0) {
+            return 0;
+        } else {
+            return PI;
+        }
+    }
+
+    return 0; //cosV && sinV both == 0
 }
