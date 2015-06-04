@@ -1,6 +1,11 @@
 #include "geom.h"
 #include <cmath>
+#include <algorithm>
+#include <cassert>
 using namespace std;
+
+
+
 
 VecInt vecDouble2vecInt(VecDouble vd){
     VecInt res;
@@ -87,7 +92,7 @@ qreal abs(QPointF p){
     return sqrt(p.x() * p.x() + p.y() * p.y());
 }
 
-qreal distance(QPointF p1, QPointF p2){
+qreal dist(QPointF p1, QPointF p2){
     QPointF p = p1 - p2;
     return abs(p);
 }
@@ -137,3 +142,113 @@ qreal positiveAngle(QPointF v) {
 
     return 0; //cosV && sinV both == 0
 }
+
+QPointF calcTopRightPoint(const QList<QPointF> &points, /*out*/ int& index){
+    assert(points.size() > 0);
+    QList<QPointF> minYPoints;
+    QList<int> indices;
+    int i;
+    for (i=0;i<points.size();i++){
+        if (minYPoints.size()<=0){
+            minYPoints.append( points[i] );
+            indices.append(i);
+        } else {
+            QPointF firstPoint = minYPoints[0];
+            if (floatEqual(firstPoint.y(), points[i].y())){
+                minYPoints.append(points[i]);
+                indices.append(i);
+            } else if (firstPoint.y()>points[i].y()){
+                minYPoints.clear();
+                minYPoints.append(points[i]);
+                indices.clear();
+                indices.append(i);
+            }//else do nothing
+        }
+
+    }
+
+    QPointF maxXPoint=minYPoints[0];
+    int maxPointIndex=indices[0];
+    for (i=1;i<minYPoints.size();i++){
+        if (minYPoints[i].x() > maxXPoint.x()){
+            maxXPoint = minYPoints[i];
+            maxPointIndex=indices[i];
+        }
+
+    }
+    index = maxPointIndex;
+    return maxXPoint;
+}
+
+
+void convexHull(const QList<QPointF> &points, /*out*/ QList<QPointF> &hullPoints) {
+
+
+    if (points.size()<=0){
+        return;
+    }
+    int pivotIndex;
+    QPointF pivot = calcTopRightPoint(points,pivotIndex);
+    QList<QPointF> pointsCopy = points;
+    pointsCopy.removeAt(pivotIndex);
+
+    if (pointsCopy.size() <= 0) {
+        return ;
+    }
+
+
+
+    PointAngleCompare angleLessThan(pivot);
+
+
+    std::sort(pointsCopy.begin(),pointsCopy.end(),angleLessThan);
+
+    hullPoints << pivot << pointsCopy[0];
+
+
+    for (int i = 1; i < pointsCopy.size(); ) {
+        if (hullPoints.size() < 2) {
+            hullPoints << pointsCopy[i];
+            i++;
+            continue;
+        }
+
+        QPointF top = hullPoints.last();
+        QPointF prevTop = hullPoints[hullPoints.size()-1-1];
+        qreal angle = positiveAngle(pointsCopy[i] - top);
+        qreal anglePrev = positiveAngle(top - prevTop);
+
+        if (angle > anglePrev) {//right turn in html5 canvas coordinates
+            hullPoints << pointsCopy[i];
+            i++;
+        } else if (angle < anglePrev) {
+            hullPoints.removeLast();
+            //next turn without increasing i;
+        } else {//angle==anglePrev
+
+            qreal distanceCurr = dist(pointsCopy[i],pivot);
+            qreal distancePrev = dist(top,pivot);
+
+            if (distanceCurr > distancePrev) {
+                hullPoints.removeLast();
+                hullPoints << pointsCopy[i];
+            }//else discard the current point
+            i++;
+
+        }
+
+    }
+
+
+    return;
+
+}
+
+
+
+bool floatEqual(qreal r1, qreal r2)
+{
+    return abs(r1-r2) < EPSILON;
+}
+
+

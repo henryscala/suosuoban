@@ -16,22 +16,22 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     cyclelist.cpp \
     vec2.cpp \
-    canvaswidget.cpp \
     geom.cpp \
     config.cpp \
     canvasscene.cpp \
     qmypathitem.cpp \
-    grid.cpp
+    grid.cpp \
+    myalgorithm.cpp
 
 HEADERS  += mainwindow.h \
     cyclelist.h \
     vec2.h \
-    canvaswidget.h \
     geom.h \
     config.h \
     canvasscene.h \
     qmypathitem.h \
-    grid.h
+    grid.h \
+    myalgorithm.h
 
 FORMS    += mainwindow.ui \
     canvaswidget.ui

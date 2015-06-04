@@ -81,7 +81,7 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
         QPointF lastPosF = currPathItem->points.last();
 
         //try to minimize number of points way 1(step)
-        qreal gap = abs(currPosF-lastPosF);
+        qreal gap = dist(currPosF,lastPosF);
         if (gap < Config::instance()->minGap() ){
             return;
         }
@@ -124,13 +124,35 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     currPathItem = NULL;
     isMouseDown = false;
 
+    calcContour();//for testing
 
     QGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
 
 void CanvasScene::calcContour()
 {
+    if (pathClusters.size()<=0) return;
 
+    PathCluster* cluster = pathClusters[0];
+    QMyPathItem* pathItem;
+    int i,k;
+    QList<QPointF> allPoints;
+    for (i=0;i<cluster->size();i++){
+        pathItem = (*cluster)[i];
+        for (k=0;k<pathItem->points.size();k++){
+            allPoints << pathItem->points[k];
+        }
+    }
+
+    QList<QPointF> hullPoints;
+    QPolygonF polygon;
+    convexHull(allPoints,hullPoints);
+    for (i=0;i<hullPoints.size();i++){
+        polygon.append(hullPoints[i]);
+    }
+
+
+    this->addPolygon(polygon);
 
 }
 
