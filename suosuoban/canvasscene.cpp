@@ -134,20 +134,18 @@ void CanvasScene::calcContour()
     if (pathClusters.size()<=0) return;
 
     PathCluster* cluster = pathClusters[0];
-    QMyPathItem* pathItem;
-    int i,k;
+
+
     QList<QPointF> allPoints;
     getAllPoints(*cluster,allPoints);
 
     PolyLine hullPoints;
+    calcContourPolygon(allPoints,hullPoints);
 
-    convexHull(allPoints, hullPoints);
-    PolyLine largeHullPoints;
-    enlargePolygon(hullPoints, largeHullPoints);
 
     QPolygonF polygon;
-    for (i=0;i<largeHullPoints.size();i++){
-        polygon.append(largeHullPoints[i]);
+    for (int i=0;i<hullPoints.size();i++){
+        polygon.append(hullPoints[i]);
     }
 
 

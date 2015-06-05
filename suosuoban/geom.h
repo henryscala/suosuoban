@@ -1,10 +1,6 @@
 #ifndef GEOM_H
 #define GEOM_H
 
-
-
-
-
 #include <QtWidgets>
 #include "vec2.h"
 #include "grid.h"
@@ -22,9 +18,9 @@ typedef QList<PolyLine*> PolyLineCluster;
 
 
 
-/*return equivalent positive angle
-* acos return values [0,pi], while asin return values [-PI/2,PI/2], but I want [0,2PI]
-*/
+/* return equivalent positive angle
+ * acos return values [0,pi], while asin return values [-PI/2,PI/2], but I want [0,2PI]
+ */
 qreal positiveAngle(QPointF v);
 
 class PointAngleCompare {
@@ -72,9 +68,6 @@ int nextIndex(const QList<T>& list, int currIndex){
 }
 
 
-
-
-
 QPointF vecDouble2qpointf(VecDouble);
 VecDouble qpointf2vecDouble(QPointF);
 VecInt vecDouble2vecInt(VecDouble);
@@ -96,14 +89,27 @@ QPointF complexMultiply(QPointF p1, QPointF p2);
 bool floatEqual(qreal r1, qreal r2);
 
 
-
 QPointF calcTopRightPoint(const QList<QPointF> &points, /*out*/ int& index);
-/*given a list of points, calculate the convex hull of the points*/
+
+/* given a list of points, calculate the convex hull of the points */
 void convexHull(const QList<QPointF> &points, /*out*/ QList<QPointF> &hullPoints);
-/*enlarge polygon, so that the new polygon contains the old polygon.
+
+/* enlarge polygon, so that the new polygon contains the old polygon.
  * for every vertex, get two vectors(passing the vertex) perpendicular to the neighbour lines,
-get the middle point of the two vectors, regard it as the new vertex of the new polygon.
+ * get the middle point of the two vectors, regard it as the new vertex of the new polygon.
  */
 void enlargePolygon(const PolyLine &polyLine, /* out */ PolyLine &largePolyLine ) ;
+
+/*make the rect largger */
+QRectF enlargeRect(QRectF r);
+
+/*get all points in the cluster*/
+void getAllPoints(const PolyLineCluster& cluster,/*out*/ QList<QPointF> &points);
+
+/* rect to polygon*/
+void toPolygon(const QRectF &r, /*out*/ PolyLine& polygon);
+
+
+void calcContourPolygon(const QList<QPointF> &points, /*out*/ PolyLine& polyLine);
 
 #endif // GEOM_H

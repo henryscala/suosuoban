@@ -112,9 +112,16 @@ bool floatEqual(qreal r1, qreal r2)
     return abs(r1-r2) < EPSILON;
 }
 
-/*return equivalent positive angle
-     *  acos return values [0,pi], while asin return values [-PI/2,PI/2], but I want [0,2PI]
-     */
+QPointF complexMultiply(QPointF p1, QPointF p2)
+{
+    QPointF res;
+    //real part
+    res.setX(p1.x()*p2.x()-p1.y()*p2.y());
+    //image part
+    res.setY(p1.x()*p2.y()+p2.x()*p1.y());
+    return res;
+}
+
 qreal positiveAngle(QPointF v) {
     v = normalize(v);
     qreal cosV = v.x();
@@ -147,6 +154,14 @@ qreal positiveAngle(QPointF v) {
     }
 
     return 0; //cosV && sinV both == 0
+}
+
+void toPolygon(const QRectF &r, /*out*/ PolyLine& polygon)
+{
+    polygon << r.topLeft()
+            << QPointF(r.bottomRight().x(),r.topLeft().y())
+            << r.bottomRight()
+            << QPointF(r.topLeft().x(),r.bottomRight().y()) ;
 }
 
 QPointF calcTopRightPoint(const QList<QPointF> &points, /*out*/ int& index){
@@ -186,12 +201,7 @@ QPointF calcTopRightPoint(const QList<QPointF> &points, /*out*/ int& index){
     return maxXPoint;
 }
 
-
-
-
 void convexHull(const QList<QPointF> &points, /*out*/ QList<QPointF> &hullPoints) {
-
-
     if (points.size()<=0){
         return;
     }
@@ -204,15 +214,12 @@ void convexHull(const QList<QPointF> &points, /*out*/ QList<QPointF> &hullPoints
         return ;
     }
 
-
-
     PointAngleCompare angleLessThan(pivot);
 
 
     std::sort(pointsCopy.begin(),pointsCopy.end(),angleLessThan);
 
     hullPoints << pivot << pointsCopy[0];
-
 
     for (int i = 1; i < pointsCopy.size(); ) {
         if (hullPoints.size() < 2) {
@@ -247,9 +254,7 @@ void convexHull(const QList<QPointF> &points, /*out*/ QList<QPointF> &hullPoints
 
     }
 
-
     return;
-
 }
 
 
@@ -283,15 +288,41 @@ void enlargePolygon(const PolyLine &polyLine, /* out */ PolyLine &largePolyLine 
 
 }
 
-
-
-
-QPointF complexMultiply(QPointF p1, QPointF p2)
+QRectF enlargeRect(QRectF r)
 {
-    QPointF res;
-    //real part
-    res.setX(p1.x()*p2.x()-p1.y()*p2.y());
-    //image part
-    res.setY(p1.x()*p2.y()+p2.x()*p1.y());
-    return res;
+    qreal padding = Config::instance()->contourPadding();
+    QPointF unit(padding,padding);
+    QPointF topLeft = r.topLeft() - unit;
+    QPointF bottomRight = r.bottomRight() + unit;
+    return QRectF(topLeft, bottomRight);
 }
+
+void calcContourPolygon(const QList<QPointF> &points, PolyLine &polyLine)
+{
+    assert(points.size()>0);
+
+    //special handling for too less points, so that it can also get a meaningful contour
+    if (points.size()<=2) {
+        QRectF enclosedRect = calcEncloseRect(points);
+        QRectF largeRect = enlargeRect(enclosedRect);
+        toPolygon(largeRect, polyLine);
+        return;
+    }
+
+    PolyLine hull;
+    convexHull(points, hull);
+
+    enlargePolygon(hull,polyLine);
+}
+
+void getAllPoints(const PolyLineCluster &cluster, QList<QPointF> &points)
+{
+    for (int o=0;o<cluster.size();o++){
+        PolyLine* line = cluster[o];
+        for (int i=0;i<line->size();i++){
+            points << line[i];
+        }
+    }
+}
+
+
