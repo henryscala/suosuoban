@@ -22,6 +22,7 @@ protected:
 
     void calcContour();
     void addPathItem(QMyPathItem* pathItem);
+    void getAllPoints(PathCluster &cluster, /* out */ QList<QPointF>& points);
 private:
     QMyPathItem* currPathItem;
     PathClusters pathClusters;

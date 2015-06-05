@@ -8,6 +8,7 @@
 #include <QtWidgets>
 #include "vec2.h"
 #include "grid.h"
+#include "config.h"
 
 #define INVINITY 0x7FFFFFFF
 #define EPSILON 0.000001
@@ -50,6 +51,25 @@ public:
 } ;
 
 
+/* look the list as a cycle list, get the previous index*/
+template <typename T>
+int prevIndex(const QList<T>& list, int currIndex){
+    currIndex --;
+    if (currIndex<0){
+        currIndex = list.size() - 1;
+    }
+    return currIndex;
+}
+
+/* look the list as a cycle list, get the next index*/
+template <typename T>
+int nextIndex(const QList<T>& list, int currIndex){
+    currIndex ++;
+    if (currIndex>=list.size()){
+        currIndex = 0;
+    }
+    return currIndex;
+}
 
 
 
@@ -69,6 +89,9 @@ qreal abs(QPointF p);
 qreal dist(QPointF p1, QPointF p2);
 QPointF normalize(QPointF p);
 
+/* simulate the multiplication of two complex numbers */
+QPointF complexMultiply(QPointF p1, QPointF p2);
+
 //whether two real numbers are equal
 bool floatEqual(qreal r1, qreal r2);
 
@@ -77,5 +100,10 @@ bool floatEqual(qreal r1, qreal r2);
 QPointF calcTopRightPoint(const QList<QPointF> &points, /*out*/ int& index);
 /*given a list of points, calculate the convex hull of the points*/
 void convexHull(const QList<QPointF> &points, /*out*/ QList<QPointF> &hullPoints);
+/*enlarge polygon, so that the new polygon contains the old polygon.
+ * for every vertex, get two vectors(passing the vertex) perpendicular to the neighbour lines,
+get the middle point of the two vectors, regard it as the new vertex of the new polygon.
+ */
+void enlargePolygon(const PolyLine &polyLine, /* out */ PolyLine &largePolyLine ) ;
 
 #endif // GEOM_H

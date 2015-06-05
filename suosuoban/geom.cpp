@@ -106,6 +106,12 @@ QPointF normalize(QPointF p){
     return QPointF(p.x()/a,p.y()/a);
 }
 
+
+bool floatEqual(qreal r1, qreal r2)
+{
+    return abs(r1-r2) < EPSILON;
+}
+
 /*return equivalent positive angle
      *  acos return values [0,pi], while asin return values [-PI/2,PI/2], but I want [0,2PI]
      */
@@ -181,6 +187,8 @@ QPointF calcTopRightPoint(const QList<QPointF> &points, /*out*/ int& index){
 }
 
 
+
+
 void convexHull(const QList<QPointF> &points, /*out*/ QList<QPointF> &hullPoints) {
 
 
@@ -245,10 +253,45 @@ void convexHull(const QList<QPointF> &points, /*out*/ QList<QPointF> &hullPoints
 }
 
 
+void enlargePolygon(const PolyLine &polyLine, /* out */ PolyLine &largePolyLine ) {
+    if (polyLine.size() <= 0){
+        return;
+    }
 
-bool floatEqual(qreal r1, qreal r2)
-{
-    return abs(r1-r2) < EPSILON;
+    if (polyLine.size() == 1) {
+        largePolyLine << polyLine[0];
+        return;
+    }
+
+    if (polyLine.size() == 2) {
+        largePolyLine << polyLine[0] << polyLine[1];
+        return;
+    }
+
+    for (int i=0; i<polyLine.size(); i++){
+        QPointF currPoint = polyLine[i];
+        QPointF prevPoint = polyLine[prevIndex(polyLine,i)];
+        QPointF nextPoint = polyLine[nextIndex(polyLine,i)];
+        //rotate 90 degree
+        QPointF rotateVector(0,-1);
+        qreal padding = Config::instance()->contourPadding();
+        QPointF perpendicularNext = currPoint + normalize( complexMultiply(nextPoint - currPoint,rotateVector) ) * padding;
+        QPointF perpendicularPrev = currPoint + normalize( complexMultiply(currPoint - prevPoint,rotateVector) ) * padding;
+        QPointF midPoint = (perpendicularNext + perpendicularPrev) * 0.5;
+        largePolyLine << midPoint;
+    }
+
 }
 
 
+
+
+QPointF complexMultiply(QPointF p1, QPointF p2)
+{
+    QPointF res;
+    //real part
+    res.setX(p1.x()*p2.x()-p1.y()*p2.y());
+    //image part
+    res.setY(p1.x()*p2.y()+p2.x()*p1.y());
+    return res;
+}

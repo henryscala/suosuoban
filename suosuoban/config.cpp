@@ -11,16 +11,16 @@ Config::Config()
 
 Config::~Config()
 {
-
+    delete settings;
 }
 
 int Config::contourPadding()
 {
-    return settings->value("geometry/contourpadding",16).toInt();
+    return settings->value("geometry/contourpadding",20).toInt();
 }
 
 int Config::penWidth(){
-    return settings->value("canvas/penwidth",3).toInt();
+    return settings->value("canvas/penwidth",5).toInt();
 }
 
 double Config::minGap()
