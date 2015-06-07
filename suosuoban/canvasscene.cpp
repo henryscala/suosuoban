@@ -47,7 +47,7 @@ void CanvasScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 
     isMouseDown = true;
-    cout << "mouse down" << endl;
+
 
     if (!currPathItem){
         delete currPathItem;
@@ -90,9 +90,9 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
         if (currPathItem->points.size()>=2){
             QPointF prevLastPosF = currPathItem->points[currPathItem->points.size()-1-1];
             qreal anglePrev = positiveAngle(lastPosF-prevLastPosF);
-            cout << "anglePrev" << anglePrev << endl;
+
             qreal angleNow =  positiveAngle(currPosF-lastPosF);
-            cout << "angleNow" << angleNow << endl;
+
             if (abs(anglePrev-angleNow) <= Config::instance()->minAngle() * PI / 180 ){
                 currPathItem->points.removeLast();
             }
@@ -110,12 +110,14 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     if (mouseEvent->button() != Qt::LeftButton)
+    {
         return;
+    }
 
 
 
     if (currPathItem){
-        if (currPathItem->points.size() >1){
+        if (currPathItem->points.size() > 1){
             addPathItem(currPathItem);
         } else {
             delete currPathItem;
@@ -155,7 +157,24 @@ void CanvasScene::calcContour()
 
 void CanvasScene::addPathItem(QMyPathItem *pathItem)
 {
+    int i;
     PathCluster* cluster;
+    PathClusters pathClustersSubset;
+
+    /* excluding faraway clusters */
+    for (i=0; i< pathClusters.size(); i++){
+        cluster = pathClusters[i];
+        QList<QPointF> pointsInCluster;
+        getAllPoints(*cluster, pointsInCluster);
+        PolyLine clusterContour;
+        calcContourPolygon(pointsInCluster, clusterContour);
+        QRectF clusterContourRect = calcEncloseRect(clusterContour);
+        QRectF pathRect = calcEncloseRect(pathItem->points);
+        if (clusterContourRect.intersects(pathRect)){
+            pathClustersSubset << cluster;
+        }
+    }
+
     if (pathClusters.size()<=0){
         cluster = new PathCluster;
         pathClusters.append(cluster);

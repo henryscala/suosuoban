@@ -10,6 +10,12 @@
 #define EPSILON 0.000001
 #define PI 3.14159265
 
+/*the four enums are used to specify relations of points and lines */
+#define COLINEAR_IN  0 //colinear and on the line segment
+#define COLINEAR_OUT  2  //colinear and not on the line segment
+#define RIGHT  1
+#define LEFT  -1
+
 typedef Vec2<double> VecDouble;
 typedef Vec2<int> VecInt;
 
@@ -17,6 +23,15 @@ typedef QList<QPointF> PolyLine;
 typedef QList<PolyLine*> PolyLineCluster;
 
 
+struct LineSegmentF {
+    LineSegmentF(){}
+    LineSegmentF(QPointF s, QPointF e):start(s),end(e){
+
+    }
+
+    QPointF start;
+    QPointF end;
+};
 
 /* return equivalent positive angle
  * acos return values [0,pi], while asin return values [-PI/2,PI/2], but I want [0,2PI]
@@ -85,6 +100,9 @@ QPointF normalize(QPointF p);
 /* simulate the multiplication of two complex numbers */
 QPointF complexMultiply(QPointF p1, QPointF p2);
 
+/* calculate the cross product of two vectors, it is related to sin(theta) between the two vectors */
+qreal crossProduct(QPointF p1, QPointF p2);
+
 //whether two real numbers are equal
 bool floatEqual(qreal r1, qreal r2);
 
@@ -100,16 +118,21 @@ void convexHull(const QList<QPointF> &points, /*out*/ QList<QPointF> &hullPoints
  */
 void enlargePolygon(const PolyLine &polyLine, /* out */ PolyLine &largePolyLine ) ;
 
-/*make the rect largger */
+/* make the rect largger */
 QRectF enlargeRect(QRectF r);
 
-/*get all points in the cluster*/
+/* get all points in the cluster */
 void getAllPoints(const PolyLineCluster& cluster,/*out*/ QList<QPointF> &points);
 
-/* rect to polygon*/
+/* rect to polygon */
 void toPolygon(const QRectF &r, /*out*/ PolyLine& polygon);
 
 
 void calcContourPolygon(const QList<QPointF> &points, /*out*/ PolyLine& polyLine);
+
+/* determine whether p3 is on the right of the line constructed by p1 and p2 */
+int onTheRight(QPointF p1, QPointF p2, QPointF p3);
+
+bool closeToZero(qreal num);
 
 #endif // GEOM_H

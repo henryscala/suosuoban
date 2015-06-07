@@ -326,3 +326,44 @@ void getAllPoints(const PolyLineCluster &cluster, QList<QPointF> &points)
 }
 
 
+bool closeToZero(qreal num){
+    num=abs(num);
+    if (num < EPSILON){
+        return true;
+    }
+    return false;
+}
+
+qreal crossProduct(QPointF p1, QPointF p2){
+    return p1.x()*p2.y() - p2.x()*p1.y();
+}
+
+int onTheRight(QPointF p1, QPointF p2, QPointF p3)
+{
+    QPointF v1 = p2 - p1;
+    QPointF v2 = p3 - p1;
+    //spedial handling if p1 and p2 nearly overlap or the same point
+    if(closeToZero( abs(v1))){
+        if(closeToZero(abs(v2))) {
+            return COLINEAR_IN;
+        } else {
+            return RIGHT;
+        }
+    }
+    qreal product = crossProduct(v1,v2);
+    if (product > 0) {
+        return RIGHT;
+    }
+    if (product < 0) {
+        return LEFT;
+    }
+
+    //colinear handling
+    qreal dist1 = abs(p3 - p1);
+    qreal dist2 = abs(p3 - p2);
+    qreal dist3 = abs(p1 - p2);
+    if (closeToZero(dist1 + dist2 - dist3)) {
+        return COLINEAR_IN;
+    }
+    return COLINEAR_OUT;
+}
