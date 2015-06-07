@@ -367,3 +367,101 @@ int onTheRight(QPointF p1, QPointF p2, QPointF p3)
     }
     return COLINEAR_OUT;
 }
+
+bool isLineSegmentIntersect(LineSegment ls1, LineSegment ls2) {
+    int r2start = onTheRight(ls1.start, ls1.end, ls2.start);
+    int r2end = onTheRight(ls1.start, ls1.end, ls2.end);
+    int r1start = onTheRight(ls2.start, ls2.end, ls1.start);
+    int r1end = onTheRight(ls2.start, ls2.end, ls1.end);
+    if (r2start == COLINEAR_IN || r2end == COLINEAR_IN || r1start == COLINEAR_IN || r1end == COLINEAR_IN) {
+        return true;
+    }
+    //this may have logic problems
+    if (r2start == COLINEAR_OUT || r2end == COLINEAR_OUT || r1start == COLINEAR_OUT || r1end == COLINEAR_OUT) {
+        return false;
+    }
+    if ((r2start * r2end < 0) && (r1start * r1end < 0)) {//on the opposite  side
+        return true;
+    }
+    return false;
+}
+
+
+
+qreal dist(const LineSegment &ls1, const LineSegment &ls2)
+{
+    if (isLineSegmentIntersect(ls1,ls2)){
+        return 0.0;
+    }
+
+    qreal ls1Len = abs(ls1.start - ls1.end);
+
+    //area of triangle divide length of one side is height
+    //height from ls2.start to ls1
+    qreal height1 = abs( crossProduct(ls2.start - ls1.start, ls2.start - ls1.end) / ls1Len / 2 );
+    //height from ls2.end to ls1
+    qreal height2 = abs ( crossProduct(ls1.start - ls2.end, ls1.end - ls2.end) / ls1Len / 2 );
+
+    qreal height3 = abs (ls1.start-ls2.start);
+
+    qreal height4 = abs (ls1.start-ls2.end);
+
+    qreal height5 = abs (ls1.end-ls2.start);
+
+    qreal height6 = abs (ls1.end-ls2.end);
+
+    QList<qreal> heights;
+    heights << height1<< height2<<height3 << height4<< height5<<height6;
+    return minElem(heights);
+}
+
+qreal minElem(const QList<qreal> &list){
+    qreal theMin = INFINITY;
+    for(int i=0; i<list.size(); i++){
+        if (list[i]<theMin){
+            theMin = list[i];
+        }
+    }
+    return theMin;
+}
+
+
+bool isPathIntersect(const PolyLine &path1, const PolyLine &path2)
+{
+    if (path1.size() <=1 || path2.size() <=1 ){
+        return false;
+    }
+    for (int i=1;i<path1.size();i++){
+        LineSegment ls1(path1[prevIndex(path1,i)], path1[i]);
+        for (int k=1; k<path2.size(); k++){
+            LineSegment ls2(path2[prevIndex(path2,k)], path2[k]);
+            if (isLineSegmentIntersect(ls1,ls2)){
+                return true;
+            }
+        }
+    }
+    return false;
+
+}
+
+
+qreal dist(const PolyLine &path1, const PolyLine &path2)
+{
+    qreal mindist = INFINITY;
+    if (isPathIntersect(path1, path2)) {
+        return 0.0;
+    }
+
+    for (int i=1;i<path1.size();i++){
+        LineSegment ls1(path1[prevIndex(path1,i)], path1[i]);
+        for (int k=1;k<path2.size();k++){
+            LineSegment ls2(path2[prevIndex(path2,k)], path2[k]);
+            qreal distance = dist(ls1,ls2);
+            if (distance<mindist){
+                mindist = distance;
+            }
+        }
+    }
+
+    return mindist;
+}

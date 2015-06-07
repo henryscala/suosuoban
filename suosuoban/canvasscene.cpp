@@ -81,7 +81,7 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
         QPointF lastPosF = currPathItem->points.last();
 
         //try to minimize number of points way 1(step)
-        qreal gap = dist(currPosF,lastPosF);
+        qreal gap = ::dist(currPosF,lastPosF);
         if (gap < Config::instance()->minGap() ){
             return;
         }
@@ -126,32 +126,45 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     currPathItem = NULL;
     isMouseDown = false;
 
-    calcContour();//for testing
+    calcContour();
 
     QGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
 
 void CanvasScene::calcContour()
 {
-    if (pathClusters.size()<=0) return;
-
-    PathCluster* cluster = pathClusters[0];
-
-
-    QList<QPointF> allPoints;
-    getAllPoints(*cluster,allPoints);
-
-    PolyLine hullPoints;
-    calcContourPolygon(allPoints,hullPoints);
-
-
-    QPolygonF polygon;
-    for (int i=0;i<hullPoints.size();i++){
-        polygon.append(hullPoints[i]);
+    int i;
+    QGraphicsPolygonItem* polygonItem;
+    //remove old ones
+    for (i=0;i<contourPolygonItems.size();i++){
+        polygonItem = contourPolygonItems[i];
+        delete polygonItem;
     }
+    contourPolygonItems.clear();
+
+    //generate new ones
+    for (i=0; i < pathClusters.size(); i++){
 
 
-    this->addPolygon(polygon);
+        PathCluster* cluster = pathClusters[i];
+
+
+        QList<QPointF> allPoints;
+        getAllPoints(*cluster,allPoints);
+
+        PolyLine hullPoints;
+        calcContourPolygon(allPoints,hullPoints);
+
+
+        QPolygonF polygon;
+        for (int k=0;k<hullPoints.size();k++){
+            polygon.append(hullPoints[k]);
+        }
+
+
+        polygonItem = this->addPolygon(polygon);
+        contourPolygonItems <<polygonItem;
+    }
 
 }
 
@@ -160,6 +173,7 @@ void CanvasScene::addPathItem(QMyPathItem *pathItem)
     int i;
     PathCluster* cluster;
     PathClusters pathClustersSubset;
+    PathClusters closeClusters;
 
     /* excluding faraway clusters */
     for (i=0; i< pathClusters.size(); i++){
@@ -175,15 +189,31 @@ void CanvasScene::addPathItem(QMyPathItem *pathItem)
         }
     }
 
-    if (pathClusters.size()<=0){
-        cluster = new PathCluster;
-        pathClusters.append(cluster);
-    } else {
-        cluster = pathClusters[0];
+
+
+    for (i=0;i<pathClustersSubset.size();i++){
+        cluster = pathClustersSubset[i];
+        qreal distance = dist(pathItem->points,*cluster);
+        if (distance < Config::instance()->contourPadding()){
+            closeClusters << cluster;
+        }
     }
 
+    PathCluster* newCluster = new PathCluster;
+    pathClusters << newCluster;
+    newCluster->append(pathItem);
 
-    cluster->append(currPathItem);
+    //merge close enough clusters to one
+    for (i=0; i< closeClusters.size();i++){
+        cluster = closeClusters[i];
+        for (int k=0;k<cluster->size();k++){
+            QMyPathItem *aPathItem = (*cluster)[k];
+            newCluster->append(aPathItem);
+        }
+        pathClusters.removeOne(cluster);
+    }
+
+    cout << "total cluster number is " << pathClusters.size() << endl;
 }
 
 void CanvasScene::getAllPoints(PathCluster &cluster, QList<QPointF> &points)
@@ -194,4 +224,18 @@ void CanvasScene::getAllPoints(PathCluster &cluster, QList<QPointF> &points)
             points << pathItem->points[k];
         }
     }
+}
+
+qreal CanvasScene::dist(const PolyLine &polyLine, const PathCluster &cluster)
+{
+    qreal mindist = INFINITY;
+
+    for (int i=0; i<cluster.size(); i++){
+        QMyPathItem* pathItem=cluster[i];
+        qreal distance = ::dist(pathItem->points,polyLine);
+        if (mindist>distance){
+            mindist = distance;
+        }
+    }
+    return mindist;
 }

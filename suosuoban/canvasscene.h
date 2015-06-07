@@ -23,9 +23,11 @@ protected:
     void calcContour();
     void addPathItem(QMyPathItem* pathItem);
     void getAllPoints(PathCluster &cluster, /* out */ QList<QPointF>& points);
+    qreal dist(const PolyLine& polyLine, const PathCluster& cluster);
 private:
     QMyPathItem* currPathItem;
     PathClusters pathClusters;
+    QList<QGraphicsPolygonItem*> contourPolygonItems;
 
     bool isMouseDown;
 

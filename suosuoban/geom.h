@@ -6,7 +6,7 @@
 #include "grid.h"
 #include "config.h"
 
-#define INVINITY 0x7FFFFFFF
+#define INFINITY 0x7FFFFFFF
 #define EPSILON 0.000001
 #define PI 3.14159265
 
@@ -23,9 +23,9 @@ typedef QList<QPointF> PolyLine;
 typedef QList<PolyLine*> PolyLineCluster;
 
 
-struct LineSegmentF {
-    LineSegmentF(){}
-    LineSegmentF(QPointF s, QPointF e):start(s),end(e){
+struct LineSegment {
+    LineSegment(){}
+    LineSegment(QPointF s, QPointF e):start(s),end(e){
 
     }
 
@@ -82,6 +82,7 @@ int nextIndex(const QList<T>& list, int currIndex){
     return currIndex;
 }
 
+qreal minElem(const QList<qreal> &list);
 
 QPointF vecDouble2qpointf(VecDouble);
 VecDouble qpointf2vecDouble(QPointF);
@@ -93,9 +94,13 @@ void fillCircle(QPointF point, qreal radius, Grid<unsigned char>& gridBoard);
 QRectF calcEncloseRect(QPointF point, qreal radius);
 QRectF calcEncloseRect(const QList<QPointF> &points);
 
+
+
 qreal abs(QPointF p);
-qreal dist(QPointF p1, QPointF p2);
 QPointF normalize(QPointF p);
+qreal dist(QPointF p1, QPointF p2);
+qreal dist(const LineSegment& ls1, const LineSegment& ls2);
+qreal dist(const PolyLine &path1, const PolyLine &path2);
 
 /* simulate the multiplication of two complex numbers */
 QPointF complexMultiply(QPointF p1, QPointF p2);
@@ -134,5 +139,11 @@ void calcContourPolygon(const QList<QPointF> &points, /*out*/ PolyLine& polyLine
 int onTheRight(QPointF p1, QPointF p2, QPointF p3);
 
 bool closeToZero(qreal num);
+
+bool isLineSegmentIntersect(LineSegment ls1, LineSegment ls2);
+/*return true's precondition is that path should have at least two points
+ *
+ */
+bool isPathIntersect(const PolyLine& path1, const PolyLine& path2);
 
 #endif // GEOM_H
