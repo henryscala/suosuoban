@@ -101,7 +101,7 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 
     currPathItem->addPoint(currPosF);
-    currPathItem->setSelfPath(false);
+    currPathItem->setSelfPath(false,false);
 
 
     QGraphicsScene::mouseMoveEvent(mouseEvent);
@@ -163,7 +163,7 @@ void CanvasScene::calcContour()
 
         contourItems << contourItem;
 
-        contourItem->setSelfPath(true);
+        contourItem->setSelfPath(true,true);
 
         QPen pen = QPen(Qt::NoPen);
         QColor color=Config::instance()->clusterColor();

@@ -21,7 +21,7 @@ int Config::contourPadding()
 
 QColor Config::clusterColor()
 {
-    QString strColor=settings->value("canvas/clustercolor","E0FFFF64").toString();
+    QString strColor=settings->value("canvas/clustercolor","E0999964").toString();
     bool ok;
     uint uintColor=strColor.toUInt(&ok,16);
     uint red,green,blue,alpha;

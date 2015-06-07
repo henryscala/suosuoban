@@ -135,6 +135,8 @@ void toPolygon(const QRectF &r, /*out*/ PolyLine& polygon);
 
 void calcContourPolygon(const QList<QPointF> &points, /*out*/ PolyLine& polyLine);
 
+void calcControlPointsOfPolygon(const PolyLine& polygon,/*out*/ QList<QPair<QPointF,QPointF> > &pointPairs);
+
 /* determine whether p3 is on the right of the line constructed by p1 and p2 */
 int onTheRight(QPointF p1, QPointF p2, QPointF p3);
 

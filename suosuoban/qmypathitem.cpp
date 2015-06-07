@@ -1,5 +1,6 @@
 #include "qmypathitem.h"
 #include <QPainterPath>
+#include "geom.h"
 
 QMyPathItem::QMyPathItem()
 {
@@ -15,16 +16,28 @@ void QMyPathItem::addPoint(QPointF p){
     points.append(p);
 }
 
-void QMyPathItem::setSelfPath(bool close){
+void QMyPathItem::setSelfPath(bool close, bool smooth){
     QPainterPath path;
-    if (points.count() <= 0){
+    int i;
+
+    if (points.size() <= 0){
         return;
     }
     path.moveTo(points[0]);
 
-    for (int i=1;i<points.count();i++){
-        path.lineTo(points[i]);
+    if (!smooth ){
+        for (i=1;i<points.size();i++){
+            path.lineTo(points[i]);
+        }
+    } else {
+        QList<QPair<QPointF,QPointF> > listOfPair;
+        calcControlPointsOfPolygon(points, listOfPair);
+        for (i=1;i<points.size();i++){
+            path.cubicTo(listOfPair[i].first,listOfPair[i].second, points[i]);
+        }
     }
+
+
     if (close){
 
         path.closeSubpath();

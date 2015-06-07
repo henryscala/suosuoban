@@ -465,3 +465,25 @@ qreal dist(const PolyLine &path1, const PolyLine &path2)
 
     return mindist;
 }
+
+
+void calcControlPointsOfPolygon(const PolyLine &polygon, QList<QPair<QPointF, QPointF> > &pointPairs)
+{
+    for (int i=0; i<polygon.size(); i++){
+        QPointF curr = polygon[i];
+        QPointF prev = polygon[prevIndex(polygon,i)];
+        QPointF next = polygon[nextIndex(polygon,i)];
+        QPointF midPointNext = (curr + next) * 0.5;
+        QPointF midPointPrev = (prev + curr) * 0.5;
+
+        qreal nextSegmentLen = abs(next - curr);
+        qreal prevSegmentLen = abs(curr - prev);
+        qreal totalLen = nextSegmentLen + prevSegmentLen;
+
+        QPointF pivotPointBetweenMidPoint = midPointPrev + (midPointNext - midPointPrev) * (prevSegmentLen / totalLen);
+        QPointF movingVector = curr - pivotPointBetweenMidPoint;
+        QPointF controlPointPrev = midPointPrev + movingVector;
+        QPointF controlPointNext = midPointNext + movingVector;
+        pointPairs << QPair<QPointF,QPointF>(controlPointPrev,controlPointNext);
+    }
+}
