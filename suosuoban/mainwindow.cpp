@@ -41,12 +41,32 @@ void MainWindow::createActions()
 {
     testAction = new QAction(tr("&Test"),this);
     connect(testAction,SIGNAL(triggered()),this,SLOT(test()));
+
+
+    drawModeAction = new QAction(tr("&Draw"),this);
+    drawModeAction->setData((int)MODE_DRAW);
+    connect(drawModeAction,SIGNAL(triggered()),scene,SLOT(canvasModeChange()));
+
+    eraseModeAction = new QAction(tr("&Erase"),this);
+    eraseModeAction->setData((int)MODE_ERASE);
+    connect(eraseModeAction,SIGNAL(triggered()),scene,SLOT(canvasModeChange()));
+
+    clusterModeAction = new QAction(tr("&Cluster"),this);
+    clusterModeAction->setData((int)MODE_CLUSTER);
+    connect(clusterModeAction,SIGNAL(triggered()),scene,SLOT(canvasModeChange()));
+
+
 }
 
 void MainWindow::createMenus()
 {
     QMenu* testMenu = menuBar()->addMenu(tr("&Test"));
     testMenu->addAction(testAction);
+
+    QMenu* modeMenu = menuBar()->addMenu(tr("&Mode"));
+    modeMenu->addAction(drawModeAction);
+    modeMenu->addAction(eraseModeAction);
+    modeMenu->addAction(clusterModeAction);
 }
 
 void MainWindow::test()

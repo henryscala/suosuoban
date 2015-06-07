@@ -31,7 +31,9 @@ private:
     QGraphicsView* view;
 
     QAction *testAction;
-
+    QAction *drawModeAction;
+    QAction *clusterModeAction;
+    QAction *eraseModeAction;
 
 
 };

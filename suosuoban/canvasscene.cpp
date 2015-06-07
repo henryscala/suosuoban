@@ -10,7 +10,7 @@ CanvasScene::CanvasScene(QObject *parent)
 {
     currPathItem = NULL;
     isMouseDown = false;
-
+    canvasMode = MODE_DRAW;
 
 
 }
@@ -36,6 +36,18 @@ CanvasScene::~CanvasScene()
 
 }
 
+void CanvasScene::canvasModeChange()
+{
+    QAction * action=(QAction*)sender();
+    bool ok;
+
+    canvasMode=(CanvasMode) action->data().toInt(&ok);
+    cout << "canvasMode " << canvasMode << endl;
+
+    selectedClusterIndices.clear();
+    calcContour();
+}
+
 
 
 void CanvasScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
@@ -44,22 +56,36 @@ void CanvasScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         return;
     }
 
-
-
     isMouseDown = true;
+    QPointF point = mouseEvent->scenePos();
+    int i;
 
-
-    if (!currPathItem){
-        delete currPathItem;
+    if (canvasMode == MODE_DRAW){
+        if (!currPathItem){
+            delete currPathItem;
+        }
+        currPathItem = new QMyPathItem();
+        this->addItem(currPathItem);
+        QPen defaultPen ;
+        defaultPen.setWidth(Config::instance()->penWidth());
+        currPathItem->setPen(defaultPen);
+        currPathItem->addPoint(point);
+    } else if (canvasMode == MODE_CLUSTER){
+        int seledtedIdx = -1;
+        QMyPathItem* clusterItem = NULL;
+        for (i=0;i<contourItems.size();i++){
+            clusterItem = contourItems[i];
+            if (pointInPolygon(point,clusterItem->points)){
+                seledtedIdx = i;
+                cout << "selected idx " << seledtedIdx << endl;
+                break;
+            }
+        }
+        this->selectedClusterIndices.clear();
+        if (seledtedIdx >= 0){
+            this->selectedClusterIndices << seledtedIdx;
+        }
     }
-    currPathItem = new QMyPathItem();
-    this->addItem(currPathItem);
-    QPen defaultPen ;
-    defaultPen.setWidth(Config::instance()->penWidth());
-    currPathItem->setPen(defaultPen);
-
-
-    currPathItem->addPoint(mouseEvent->scenePos());
 
 
 
@@ -75,33 +101,34 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
     QPointF currPosF = mouseEvent->scenePos();
 
 
+    if (canvasMode == MODE_DRAW){
 
+        if (currPathItem->points.size() > 0) {
+            QPointF lastPosF = currPathItem->points.last();
 
-    if (currPathItem->points.size() > 0) {
-        QPointF lastPosF = currPathItem->points.last();
+            //try to minimize number of points way 1(step)
+            qreal gap = ::dist(currPosF,lastPosF);
+            if (gap < Config::instance()->minGap() ){
+                return;
+            }
 
-        //try to minimize number of points way 1(step)
-        qreal gap = ::dist(currPosF,lastPosF);
-        if (gap < Config::instance()->minGap() ){
-            return;
-        }
+            //try to minimize number of points way 2(angle)
+            if (currPathItem->points.size()>=2){
+                QPointF prevLastPosF = currPathItem->points[currPathItem->points.size()-1-1];
+                qreal anglePrev = positiveAngle(lastPosF-prevLastPosF);
 
-        //try to minimize number of points way 2(angle)
-        if (currPathItem->points.size()>=2){
-            QPointF prevLastPosF = currPathItem->points[currPathItem->points.size()-1-1];
-            qreal anglePrev = positiveAngle(lastPosF-prevLastPosF);
+                qreal angleNow =  positiveAngle(currPosF-lastPosF);
 
-            qreal angleNow =  positiveAngle(currPosF-lastPosF);
-
-            if (abs(anglePrev-angleNow) <= Config::instance()->minAngle() * PI / 180 ){
-                currPathItem->points.removeLast();
+                if (abs(anglePrev-angleNow) <= Config::instance()->minAngle() * PI / 180 ){
+                    currPathItem->points.removeLast();
+                }
             }
         }
+
+
+        currPathItem->addPoint(currPosF);
+        currPathItem->setSelfPath(false,false);
     }
-
-
-    currPathItem->addPoint(currPosF);
-    currPathItem->setSelfPath(false,false);
 
 
     QGraphicsScene::mouseMoveEvent(mouseEvent);
@@ -115,15 +142,17 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     }
 
 
-
-    if (currPathItem){
-        if (currPathItem->points.size() > 1){
-            addPathItem(currPathItem);
-        } else {
-            delete currPathItem;
+    if (canvasMode == MODE_DRAW){
+        if (currPathItem){
+            if (currPathItem->points.size() > 1){
+                addPathItem(currPathItem);
+            } else {
+                delete currPathItem;
+            }
         }
+        currPathItem = NULL;
     }
-    currPathItem = NULL;
+
     isMouseDown = false;
 
     calcContour();
@@ -156,6 +185,7 @@ void CanvasScene::calcContour()
         calcContourPolygon(allPoints,hullPoints);
 
         contourItem = new QMyPathItem;
+        contourItem->setData(CLUSTER_IDX,i);
 
         for (int k=0;k<hullPoints.size();k++){
             contourItem->points.append(hullPoints[k]);
@@ -163,16 +193,28 @@ void CanvasScene::calcContour()
 
         contourItems << contourItem;
 
-        contourItem->setSelfPath(true,true);
+        if (canvasMode==MODE_CLUSTER){
+            contourItem->setSelfPath(true,false);
+        } else {
+            contourItem->setSelfPath(true,true);
+        }
 
-        QPen pen = QPen(Qt::NoPen);
+        QPen penNone = QPen(Qt::NoPen);
+        QPen penSolid = QPen(Qt::SolidLine);
         QColor color=Config::instance()->clusterColor();
         QBrush brush(color);
         contourItem->setBrush(brush);
-        contourItem->setPen(pen);
+
+        if (selectedClusterIndices.contains(i)){
+            contourItem->setPen(penSolid);
+        } else {
+            contourItem->setPen(penNone);
+        }
 
         this->addItem(contourItem);
     }
+
+
 
 }
 

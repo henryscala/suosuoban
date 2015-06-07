@@ -148,4 +148,12 @@ bool isLineSegmentIntersect(LineSegment ls1, LineSegment ls2);
  */
 bool isPathIntersect(const PolyLine& path1, const PolyLine& path2);
 
+/*polygon area with sign*/
+qreal polygonArea(const PolyLine &polygon);
+
+/* in  canvas coordinate*/
+bool isPolygonClockwise(const PolyLine &polygon);
+
+bool pointInPolygon(QPointF point, const PolyLine& polygon);
+
 #endif // GEOM_H

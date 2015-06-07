@@ -9,12 +9,23 @@
 typedef QList<QMyPathItem*> PathCluster;
 typedef QList<PathCluster*> PathClusters;
 
+enum CanvasMode{
+    MODE_DRAW,
+    MODE_CLUSTER,
+    MODE_ERASE,
+    MODE_MAX
+};
+
+#define CLUSTER_IDX 0
+
 class CanvasScene: public QGraphicsScene
 {
     Q_OBJECT
 public:
     explicit CanvasScene(QObject *parent);
     ~CanvasScene();
+public slots:
+    void canvasModeChange();
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
@@ -28,8 +39,10 @@ private:
     QMyPathItem* currPathItem;
     PathClusters pathClusters;
     QList<QMyPathItem*> contourItems;
+    QList<int> selectedClusterIndices;
 
     bool isMouseDown;
+    CanvasMode canvasMode;
 
 };
 

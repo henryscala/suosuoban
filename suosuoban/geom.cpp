@@ -487,3 +487,50 @@ void calcControlPointsOfPolygon(const PolyLine &polygon, QList<QPair<QPointF, QP
         pointPairs << QPair<QPointF,QPointF>(controlPointPrev,controlPointNext);
     }
 }
+
+
+qreal polygonArea(const PolyLine &polygon) {
+    qreal area = 0.0;
+    for (int i=0; i<polygon.size(); i++){
+        QPointF curr = polygon[i];
+        QPointF next = polygon[ nextIndex(polygon,i)];
+        area += crossProduct(curr,next);
+    }
+
+    return area / 2;
+}
+
+
+bool isPolygonClockwise(const PolyLine& polygon) {
+    if (polygonArea(polygon) >= 0) {
+        return true;
+    }
+    return false;
+}
+
+bool pointInPolygon(QPointF point, const PolyLine &polygon)
+{
+    bool isClockwise = isPolygonClockwise(polygon);
+    PolyLine newPolygon;
+    if (isClockwise){
+        newPolygon = polygon;
+    } else {
+        //reverse
+        for (int k=0;k<polygon.size();k++){
+            newPolygon.push_front(polygon[k]);
+        }
+    }
+    for (int i=0; i<newPolygon.size(); i++){
+        QPointF curr = newPolygon[i];
+        QPointF next = newPolygon[ nextIndex(newPolygon,i)];
+        int result = onTheRight(curr,next,point);
+        if (result == COLINEAR_OUT){
+            return false;
+        }
+
+        if (result == LEFT){
+            return false;
+        }
+    }
+    return true;
+}
