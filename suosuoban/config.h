@@ -1,6 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 #include <QSettings>
+#include <QColor>
 
 class Config
 {
@@ -14,6 +15,7 @@ public:
     double minAngle();//in degree not radian
     int penWidth();
     int contourPadding();
+    QColor clusterColor();
     static Config *instance();
 };
 

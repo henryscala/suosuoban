@@ -9,7 +9,7 @@ public:
     QMyPathItem();
     ~QMyPathItem();
     void addPoint(QPointF);
-    void setSelfPath();
+    void setSelfPath(bool close);
     QList<QPointF> points;
 };
 

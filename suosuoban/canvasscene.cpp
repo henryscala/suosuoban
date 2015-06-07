@@ -101,7 +101,7 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 
     currPathItem->addPoint(currPosF);
-    currPathItem->setSelfPath();
+    currPathItem->setSelfPath(false);
 
 
     QGraphicsScene::mouseMoveEvent(mouseEvent);
@@ -134,13 +134,13 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 void CanvasScene::calcContour()
 {
     int i;
-    QGraphicsPolygonItem* polygonItem;
+    QMyPathItem* contourItem;
     //remove old ones
-    for (i=0;i<contourPolygonItems.size();i++){
-        polygonItem = contourPolygonItems[i];
-        delete polygonItem;
+    for (i=0;i<contourItems.size();i++){
+        contourItem = contourItems[i];
+        delete contourItem;
     }
-    contourPolygonItems.clear();
+    contourItems.clear();
 
     //generate new ones
     for (i=0; i < pathClusters.size(); i++){
@@ -155,15 +155,23 @@ void CanvasScene::calcContour()
         PolyLine hullPoints;
         calcContourPolygon(allPoints,hullPoints);
 
+        contourItem = new QMyPathItem;
 
-        QPolygonF polygon;
         for (int k=0;k<hullPoints.size();k++){
-            polygon.append(hullPoints[k]);
+            contourItem->points.append(hullPoints[k]);
         }
 
+        contourItems << contourItem;
 
-        polygonItem = this->addPolygon(polygon);
-        contourPolygonItems <<polygonItem;
+        contourItem->setSelfPath(true);
+
+        QPen pen = QPen(Qt::NoPen);
+        QColor color=Config::instance()->clusterColor();
+        QBrush brush(color);
+        contourItem->setBrush(brush);
+        contourItem->setPen(pen);
+
+        this->addItem(contourItem);
     }
 
 }

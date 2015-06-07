@@ -27,7 +27,7 @@ protected:
 private:
     QMyPathItem* currPathItem;
     PathClusters pathClusters;
-    QList<QGraphicsPolygonItem*> contourPolygonItems;
+    QList<QMyPathItem*> contourItems;
 
     bool isMouseDown;
 
