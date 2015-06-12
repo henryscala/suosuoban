@@ -11,6 +11,14 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = suosuoban
 TEMPLATE = app
 
+#added by me
+QMAKE_CXXFLAGS_RELEASE += -g
+QMAKE_CFLAGS_RELEASE += -g
+QMAKE_LFLAGS_RELEASE = -mthreads
+QMAKE_CXXFLAGS_DEBUG += -g
+QMAKE_CFLAGS_DEBUG += -g
+QMAKE_LFLAGS_DEBUG = -mthreads
+
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -21,7 +29,8 @@ SOURCES += main.cpp\
     canvasscene.cpp \
     qmypathitem.cpp \
     grid.cpp \
-    myalgorithm.cpp
+    myalgorithm.cpp \
+    ccrashstack.cpp
 
 HEADERS  += mainwindow.h \
     cyclelist.h \
@@ -31,7 +40,8 @@ HEADERS  += mainwindow.h \
     canvasscene.h \
     qmypathitem.h \
     grid.h \
-    myalgorithm.h
+    myalgorithm.h \
+    ccrashstack.h
 
 FORMS    += mainwindow.ui \
     canvaswidget.ui

@@ -258,19 +258,22 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
         if (selectedClusterIndices.size() && currPathItem && currPathItem->points.size() > 1){
             QPointF startPos = currPathItem->points.first();
             QPointF deviation = currPosF - startPos;
+            PathCluster *orphanCluster = new PathCluster; //it is not in pathClusters now
             for (int i=0; i<selectedClusterIndices.size(); i++){
                 PathCluster* cluster = pathClusters[selectedClusterIndices[i]];
 
 
                 //copy
                 if (isModKeyDown){
-                    PathCluster copyCluster = *cluster;//make a copy because cluster may change in the loop
-                    for (int k=0;k<copyCluster.size();k++){
-                        QMyPathItem* pathItem = copyCluster[k];
+
+                    for (int k=0;k<cluster->size();k++){
+                        QMyPathItem* pathItem = (*cluster)[k];
                         QMyPathItem* newPathItem = clonePathItem(pathItem);
                         move(newPathItem->points, deviation);
                         newPathItem->setSelfPath(false,false);
-                        addPathItem(pathClusters,newPathItem);
+                        //temporarily add the item to orphanCluster, later everything will be rebuilt
+                        //in this way clusters in pathClusters keeps stable to avoid crash
+                        *orphanCluster << newPathItem;
                     }
                 } else {//move
 
@@ -280,9 +283,12 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
                         pathItem->setSelfPath(false,false);
 
                     }
-                    rebuildPathClusters();
+
                 }
             }
+
+            pathClusters << orphanCluster;
+            rebuildPathClusters();
             selectedClusterIndices.clear();
         }
 
