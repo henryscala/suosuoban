@@ -32,17 +32,25 @@ CanvasScene::~CanvasScene()
 void CanvasScene::clearPathClusters(PathClusters& clusters){
     for (int i=0;i<clusters.size();i++){
         PathCluster* cluster = clusters[i];
-        for (int k=0;k<cluster->size();k++){
-            QMyPathItem* pathItem = (*cluster)[k];
-            if(pathItem){
-                delete pathItem;
-            }
-        }
+
         if (cluster){
-            delete cluster;
+            clearPathCluster(&cluster);
         }
     }
     clusters.clear();
+}
+
+void CanvasScene::clearPathCluster(PathCluster **cluster)
+{
+    for (int k=0;k<(*cluster)->size();k++){
+        QMyPathItem* pathItem = (**cluster)[k];
+        if(pathItem){
+            delete pathItem;
+        }
+    }
+
+    delete *cluster;
+    *cluster = NULL;
 }
 
 void CanvasScene::canvasModeChange(int mode)
@@ -152,17 +160,27 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
     if (canvasMode == MODE_DRAW){       
 
     } else if (canvasMode == MODE_ERASE) {
-        if (currPathItem && currPathItem->points.size() >=2){
+        if (currPathItem && currPathItem->points.size() >=2 ){
             PathClusters closeClusters;
             excludeClustersFarAway(pathClusters, *currPathItem, closeClusters);
+
             for (int i=0; i<closeClusters.size();i++){
                 PathCluster* cluster = closeClusters[i];
-                int clusterSize = cluster->size();//copy it because cluster may be deleted in the loop
-                for (int k=clusterSize-1; k>=0; k--){//changing it from 0 to size is likely to cause crash because cluster may be modified in the loop, check further infuture
+
+                for (int k=cluster->size()-1; k >=0 ; k--){
                     QMyPathItem* item = (*cluster)[k];
                     if (isPathIntersect(item->points, currPathItem->points)){
                         removePathItem(pathClusters,item);
                     }
+                }
+            }
+
+            //remove empty cluster
+            for (int i=pathClusters.size()-1; i>=0; i--){
+                PathCluster* cluster = pathClusters[i];
+                if (cluster->size() <= 0){
+                    pathClusters.removeAt(i);
+                    delete cluster;
                 }
             }
         }
@@ -411,9 +429,9 @@ void CanvasScene::removePathItem(PathClusters &clusters, QMyPathItem *pathItem)
     cluster->removeOne(pathItem);
     delete pathItem;
     if (cluster->size() <=0){
-        clusters.removeOne(cluster);
-        delete cluster;
-        cluster = NULL;
+        //postpone remove because I don't want to invalidate old clusters referenced outside the function
+        cluster->clear();//make it size 0
+
     } else if (cluster->size() >=2){//check whether need to divide the cluster
         PathClusters subClusters;
         QMyPathItem *item;
@@ -422,18 +440,17 @@ void CanvasScene::removePathItem(PathClusters &clusters, QMyPathItem *pathItem)
             addPathItem(subClusters,item);
         }
         if (subClusters.size() > 1){
-            clusters.removeOne(cluster);
-            delete cluster;
-            cluster = NULL;
+            //postpone remove because I don't want to invalidate old clusters referenced outside the function
+            cluster->clear();//make it size 0
+
             for (int i=0; i< subClusters.size(); i++){
                 clusters << subClusters[i];
             }
 
+        } else if (subClusters.size() == 1) {
+            delete subClusters[0];
         } else {
-            for (int i=0; i<subClusters.size(); i++) {
-                delete subClusters[i];
-            }
-            subClusters.clear();
+            assert(false);
         }
     }
 

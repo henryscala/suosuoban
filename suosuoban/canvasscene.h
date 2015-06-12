@@ -38,6 +38,7 @@ protected:
     PathCluster* clonePathCluster(PathCluster *cluster);
     QMyPathItem* clonePathItem(QMyPathItem* item);
     void clearPathClusters(PathClusters& clusters);
+    void clearPathCluster(PathCluster** cluster);
     void calcContour();
     void addPathItem(PathClusters& clusters,QMyPathItem* pathItem);
     void removePathItem(PathClusters& clusters,QMyPathItem* pathItem);
