@@ -15,7 +15,8 @@ CanvasScene::CanvasScene(QObject *parent)
     isModKeyDown = false;
     canvasMode = MODE_DRAW;
 
-
+    QBrush brush(Config::instance()->backColor());
+    this->setBackgroundBrush(brush);
 }
 
 CanvasScene::~CanvasScene()
@@ -53,16 +54,37 @@ void CanvasScene::clearPathCluster(PathCluster **cluster)
     *cluster = NULL;
 }
 
-void CanvasScene::canvasModeChange(int mode)
+void CanvasScene::canvasModeChange(CanvasMode mode)
 {
 
 
-    canvasMode=(CanvasMode)mode;
+    canvasMode=mode;
     cout << "canvasMode " << canvasMode << endl;
 
 
     selectedClusterIndices.clear();
     calcContour();
+}
+
+void CanvasScene::canvasColorChange(CanvasColorType colorType, QColor color)
+{
+    QBrush brush(color);
+    switch (colorType){
+    case COLOR_TYPE_PEN:
+        Config::instance()->penColor(color);
+        break;
+    case COLOR_TYPE_BACK:
+        Config::instance()->backColor(color);
+
+        this->setBackgroundBrush(brush);
+        break;
+    case COLOR_TYPE_CLUSTER:
+        Config::instance()->clusterColor(color);
+        calcContour();
+        break;
+    default:
+        assert(false);
+    }
 }
 
 
@@ -84,6 +106,7 @@ void CanvasScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
     this->addItem(currPathItem);
     QPen defaultPen ;
     defaultPen.setWidth(Config::instance()->penWidth());
+    defaultPen.setColor(Config::instance()->penColor());
     currPathItem->setPen(defaultPen);
     currPathItem->addPoint(point);
 
@@ -348,7 +371,7 @@ void CanvasScene::calcContour()
         calcContourPolygon(allPoints,hullPoints);
 
         contourItem = new QMyPathItem;
-        contourItem->setData(CLUSTER_IDX,i);
+
 
         for (int k=0;k<hullPoints.size();k++){
             contourItem->points.append(hullPoints[k]);
@@ -364,8 +387,9 @@ void CanvasScene::calcContour()
 
         QPen penNone = QPen(Qt::NoPen);
         QPen penSolid = QPen(Qt::SolidLine);
-        QColor color=Config::instance()->clusterColor();
-        QBrush brush(color);
+        penSolid.setColor(Config::instance()->penColor());
+        QColor brushColor=Config::instance()->clusterColor();
+        QBrush brush(brushColor);
         contourItem->setBrush(brush);
 
         if (selectedClusterIndices.contains(i)){

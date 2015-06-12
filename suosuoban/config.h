@@ -11,12 +11,30 @@ private:
     Config();
     ~Config();
 public:
-    double minGap();
-    double minAngle();//in degree not radian
-    int penWidth();
-    int contourPadding();
-    QColor clusterColor();
     static Config *instance();
+
+    double minGap();
+    void minGap(double val);
+
+    double minAngle();//in degree not radian
+    void minAngle(double val);
+
+    int penWidth();
+    void penWidth(int val);
+
+    int contourPadding();
+    void contourPadding(int val);
+
+    QColor clusterColor();
+    void clusterColor(QColor val);
+
+    QColor penColor();
+    void penColor(QColor val);
+
+    QColor backColor();
+    void backColor(QColor val);
+
+
 };
 
 

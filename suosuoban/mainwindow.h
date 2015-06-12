@@ -23,10 +23,11 @@ public:
 public slots:
     void test();
     void canvasModeChange();
+    void canvasColorChange();
 protected:
     void createActions();
     void createMenus();
-
+    QIcon createIcon(QColor color);
 
 private:
     Ui::MainWindow *ui;
@@ -34,7 +35,10 @@ private:
     CanvasScene* scene;
     QGraphicsView* view;
 
-    QAction *testAction;
+    QAction *colorPenAction;
+    QAction *colorBackAction;
+    QAction *colorClusterAction;
+
     QAction *drawModeAction;
     QAction *clusterModeAction;
     QAction *eraseModeAction;

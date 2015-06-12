@@ -2,6 +2,41 @@
 
 Config* Config::config=NULL;
 
+QString widthTwo(QString str){
+    if (str.length()==0){
+        return "00";
+    }
+    if (str.length()==1){
+        return "0"+ str;
+    }
+    if (str.length()==2){
+        return str;
+    }
+    if (str.length()>2){
+        return str.left(2);
+    }
+}
+
+QColor hexStrToColor(QString strColor){
+    bool ok;
+    uint uintColor=strColor.toUInt(&ok,16);
+    uint red,green,blue,alpha;
+    red = (uintColor >> 24) & 0xFF;
+    green = (uintColor >> 16) & 0xFF;
+    blue = (uintColor >> 8) & 0xFF;
+    alpha = uintColor &  0xFF;
+    return QColor(red,green,blue,alpha);
+}
+
+
+
+QString colorToHexStr(QColor color){
+    QString red = widthTwo(QString::number( color.red(),16));
+    QString green = widthTwo( QString::number( color.green(),16) );
+    QString blue = widthTwo(QString::number( color.blue(),16));
+    QString alpha = widthTwo( QString::number( color.alpha(),16) );
+    return red + green + blue + alpha;
+}
 
 Config::Config()
 {
@@ -22,15 +57,34 @@ int Config::contourPadding()
 QColor Config::clusterColor()
 {
     QString strColor=settings->value("canvas/clustercolor","E0999964").toString();
-    bool ok;
-    uint uintColor=strColor.toUInt(&ok,16);
-    uint red,green,blue,alpha;
-    red = (uintColor >> 24) & 0xFF;
-    green = (uintColor >> 16) & 0xFF;
-    blue = (uintColor >> 8) & 0xFF;
-    alpha = uintColor &  0xFF;
-    QColor color(red,green,blue,alpha);
-    return color;
+    return hexStrToColor(strColor);
+}
+
+void Config::clusterColor(QColor val)
+{
+    settings->setValue("canvas/clustercolor",colorToHexStr(val));
+}
+
+QColor Config::penColor()
+{
+    QString strColor=settings->value("canvas/pencolor","000000FF").toString();
+    return hexStrToColor(strColor);
+}
+
+void Config::penColor(QColor val)
+{
+    settings->setValue("canvas/pencolor",colorToHexStr(val));
+}
+
+QColor Config::backColor()
+{
+    QString strColor=settings->value("canvas/backgroundcolor","FFFFFFFF").toString();
+    return hexStrToColor(strColor);
+}
+
+void Config::backColor(QColor val)
+{
+    settings->setValue("canvas/backgroundcolor",colorToHexStr(val));
 }
 
 int Config::penWidth(){

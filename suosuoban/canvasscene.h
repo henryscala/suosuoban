@@ -16,16 +16,25 @@ enum CanvasMode{
     MODE_MAX
 };
 
-#define CLUSTER_IDX 0
+enum CanvasColorType{
+    COLOR_TYPE_PEN,
+    COLOR_TYPE_BACK,
+    COLOR_TYPE_CLUSTER,
+    COLOR_TYPE_MAX
+};
+
+
 
 class CanvasScene: public QGraphicsScene
 {
     Q_OBJECT
 public:
+
     explicit CanvasScene(QObject *parent);
     ~CanvasScene();
 
-    void canvasModeChange(int mode);
+    void canvasModeChange(CanvasMode mode);
+    void canvasColorChange(CanvasColorType colorType, QColor color);
 public slots:
 
 protected:

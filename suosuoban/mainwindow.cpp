@@ -9,12 +9,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    const int SIZEX = 5000;//temporarily
-    const int SIZEY = 5000;
+
     ui->setupUi(this);
 
     scene = new CanvasScene(this);
-    scene->setSceneRect(QRectF(0, 0, SIZEX, SIZEY));
+    scene->setSceneRect(QRectF(0, 0, this->geometry().width(), this->geometry().height()));
 
 
 
@@ -40,8 +39,7 @@ void MainWindow::resizeEvent(QResizeEvent *event){
 
 void MainWindow::createActions()
 {
-    //testAction = new QAction(tr("&Test"),this);
-    //connect(testAction,SIGNAL(triggered()),this,SLOT(test()));
+
 
 
     drawModeAction = new QAction(tr("&Draw"),this);
@@ -60,6 +58,20 @@ void MainWindow::createActions()
     clusterModeAction->setData((int)MODE_CLUSTER);
     connect(clusterModeAction,SIGNAL(triggered()),this,SLOT(canvasModeChange()));
 
+    colorPenAction = new QAction(tr("&Pen"),this);
+    colorPenAction->setData((int)COLOR_TYPE_PEN);
+    colorPenAction->setIcon(createIcon(Config::instance()->penColor()));
+    connect(colorPenAction,SIGNAL(triggered()),this,SLOT(canvasColorChange()));
+
+    colorBackAction = new QAction(tr("&Background"),this);
+    colorBackAction->setData((int)COLOR_TYPE_BACK);
+    colorBackAction->setIcon(createIcon(Config::instance()->backColor()));
+    connect(colorBackAction,SIGNAL(triggered()),this,SLOT(canvasColorChange()));
+
+    colorClusterAction = new QAction(tr("&Cluster"),this);
+    colorClusterAction->setData((int)COLOR_TYPE_CLUSTER);
+    colorClusterAction->setIcon(createIcon(Config::instance()->clusterColor()));
+    connect(colorClusterAction,SIGNAL(triggered()),this,SLOT(canvasColorChange()));
 
 }
 
@@ -72,6 +84,18 @@ void MainWindow::createMenus()
     modeMenu->addAction(drawModeAction);
     modeMenu->addAction(eraseModeAction);
     modeMenu->addAction(clusterModeAction);
+
+    QMenu* colorMenu = menuBar()->addMenu(tr("&Color"));
+    colorMenu->addAction(colorPenAction);
+    colorMenu->addAction(colorBackAction);
+    colorMenu->addAction(colorClusterAction);
+}
+
+QIcon MainWindow::createIcon(QColor color)
+{
+    QPixmap bmp(32,32);
+    bmp.fill(color);
+    return QIcon(bmp);
 }
 
 void MainWindow::test()
@@ -84,7 +108,7 @@ void MainWindow::canvasModeChange()
     QAction * action=(QAction*)sender();
     bool ok;
 
-    int canvasMode=(CanvasMode) action->data().toInt(&ok);
+    CanvasMode canvasMode=(CanvasMode) action->data().toInt(&ok);
     scene->canvasModeChange(canvasMode);
 
     drawModeAction->setChecked(false);
@@ -99,5 +123,31 @@ void MainWindow::canvasModeChange()
     } else {
         assert(false);
     }
+}
+
+void MainWindow::canvasColorChange()
+{
+
+    QAction * action=(QAction*)sender();
+    bool ok;
+
+    CanvasColorType colorType=(CanvasColorType) action->data().toInt(&ok);
+    QColor outputColor;
+    switch (colorType){
+    case COLOR_TYPE_PEN:
+        outputColor = QColorDialog::getColor(Config::instance()->penColor(),this,tr("Pen Color"),QColorDialog::ShowAlphaChannel);
+        break;
+    case COLOR_TYPE_BACK:
+        outputColor = QColorDialog::getColor(Config::instance()->backColor(),this,tr("Background Color"),QColorDialog::ShowAlphaChannel);
+        break;
+    case COLOR_TYPE_CLUSTER:
+        outputColor = QColorDialog::getColor(Config::instance()->clusterColor(),this,tr("Cluster Color"),QColorDialog::ShowAlphaChannel);
+        break;
+    default:
+        assert(false);
+    }
+
+    action->setIcon(createIcon(outputColor));
+    scene->canvasColorChange(colorType,outputColor);
 }
 
