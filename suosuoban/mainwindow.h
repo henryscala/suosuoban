@@ -19,11 +19,15 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void resizeEvent(QResizeEvent *event);
+
+public slots:
+    void test();
+    void canvasModeChange();
 protected:
     void createActions();
     void createMenus();
-protected slots:
-    void test();
+
+
 private:
     Ui::MainWindow *ui;
 

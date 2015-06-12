@@ -44,10 +44,10 @@ QRectF calcEncloseRect(QPointF point, qreal radius)
 
 QRectF calcEncloseRect(const QList<QPointF> &points)
 {
-    qreal minx=INFINITY;
-    qreal miny=INFINITY;
-    qreal maxx=-INFINITY;
-    qreal maxy=-INFINITY;
+    qreal minx= MYINFINITY;
+    qreal miny= MYINFINITY;
+    qreal maxx= -MYINFINITY;
+    qreal maxy=-MYINFINITY;
 
     for (int i=0;i<points.size();i++){
         if (points[i].x()<minx){
@@ -416,8 +416,8 @@ qreal dist(const LineSegment &ls1, const LineSegment &ls2)
 }
 
 qreal minElem(const QList<qreal> &list){
-    qreal theMin = INFINITY;
-    for(int i=0; i<list.size(); i++){
+    qreal theMin = MYINFINITY;
+    for (int i=0; i<list.size(); i++){
         if (list[i]<theMin){
             theMin = list[i];
         }
@@ -447,7 +447,7 @@ bool isPathIntersect(const PolyLine &path1, const PolyLine &path2)
 
 qreal dist(const PolyLine &path1, const PolyLine &path2)
 {
-    qreal mindist = INFINITY;
+    qreal mindist = MYINFINITY;
     if (isPathIntersect(path1, path2)) {
         return 0.0;
     }
@@ -533,4 +533,12 @@ bool pointInPolygon(QPointF point, const PolyLine &polygon)
         }
     }
     return true;
+}
+
+
+void move(QList<QPointF> &points, QPointF point)
+{
+    for (int i=0;i<points.size();i++){
+        points[i] = points[i] + point;
+    }
 }

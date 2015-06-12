@@ -6,7 +6,7 @@
 #include "grid.h"
 #include "config.h"
 
-#define INFINITY 0x7FFFFFFF
+#define MYINFINITY 0x7FFFFFFF
 #define EPSILON 0.000001
 #define PI 3.14159265
 
@@ -155,5 +155,8 @@ qreal polygonArea(const PolyLine &polygon);
 bool isPolygonClockwise(const PolyLine &polygon);
 
 bool pointInPolygon(QPointF point, const PolyLine& polygon);
+
+/* move points according to point */
+void move(QList<QPointF> &points, QPointF point);
 
 #endif // GEOM_H
