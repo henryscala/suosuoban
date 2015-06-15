@@ -87,6 +87,28 @@ void CanvasScene::canvasColorChange(CanvasColorType colorType, QColor color)
     }
 }
 
+void CanvasScene::delCluster()
+{
+
+    if (canvasMode != MODE_CLUSTER){
+        return;
+    }
+
+    if (selectedClusterIndices.size() <= 0) {
+        return;
+    }
+
+    std::sort(selectedClusterIndices.begin(),selectedClusterIndices.end());
+    for (int i=selectedClusterIndices.size()-1; i>=0; i--){
+        int idx = selectedClusterIndices[i];
+        PathCluster* cluster = pathClusters[idx];
+        pathClusters.removeAt(idx);
+        clearPathCluster(&cluster);
+    }
+    selectedClusterIndices.clear();
+    calcContour();
+}
+
 
 
 void CanvasScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)

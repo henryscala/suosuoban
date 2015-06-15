@@ -58,6 +58,10 @@ void MainWindow::createActions()
     clusterModeAction->setData((int)MODE_CLUSTER);
     connect(clusterModeAction,SIGNAL(triggered()),this,SLOT(canvasModeChange()));
 
+    showHideClusterAction = new QAction(tr("&Hide Cluster"),this);
+    showHideClusterAction->setCheckable(true);
+    showHideClusterAction->setChecked(true);//checked means Showing Cluster
+
     colorPenAction = new QAction(tr("&Pen"),this);
     colorPenAction->setData((int)COLOR_TYPE_PEN);
     colorPenAction->setIcon(createIcon(Config::instance()->penColor()));
@@ -73,22 +77,34 @@ void MainWindow::createActions()
     colorClusterAction->setIcon(createIcon(Config::instance()->clusterColor()));
     connect(colorClusterAction,SIGNAL(triggered()),this,SLOT(canvasColorChange()));
 
+    delClusterAction = new QAction(tr("&Delete"),this);
+    connect(delClusterAction,SIGNAL(triggered()),this,SLOT(delCluster()));
+
 }
 
 void MainWindow::createMenus()
 {
     //QMenu* testMenu = menuBar()->addMenu(tr("&Test"));
     //testMenu->addAction(testAction);
+    QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
 
     QMenu* modeMenu = menuBar()->addMenu(tr("&Mode"));
     modeMenu->addAction(drawModeAction);
     modeMenu->addAction(eraseModeAction);
     modeMenu->addAction(clusterModeAction);
+    modeMenu->addSeparator();
+    modeMenu->addAction( showHideClusterAction );
+
+    QMenu* editMenu = menuBar()->addMenu(tr("&Edit"));
+    editMenu->addAction(delClusterAction);
 
     QMenu* colorMenu = menuBar()->addMenu(tr("&Color"));
     colorMenu->addAction(colorPenAction);
     colorMenu->addAction(colorBackAction);
     colorMenu->addAction(colorClusterAction);
+
+    QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
+
 }
 
 QIcon MainWindow::createIcon(QColor color)
@@ -149,5 +165,11 @@ void MainWindow::canvasColorChange()
 
     action->setIcon(createIcon(outputColor));
     scene->canvasColorChange(colorType,outputColor);
+}
+
+void MainWindow::delCluster()
+{
+    scene->delCluster();
+
 }
 

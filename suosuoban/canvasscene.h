@@ -35,6 +35,7 @@ public:
 
     void canvasModeChange(CanvasMode mode);
     void canvasColorChange(CanvasColorType colorType, QColor color);
+    void delCluster();
 public slots:
 
 protected:
