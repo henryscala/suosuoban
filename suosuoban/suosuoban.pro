@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     qmypathitem.cpp \
     grid.cpp \
     myalgorithm.cpp \
-    ccrashstack.cpp
+    ccrashstack.cpp \
+    persistence.cpp
 
 HEADERS  += mainwindow.h \
     cyclelist.h \
@@ -41,7 +42,8 @@ HEADERS  += mainwindow.h \
     qmypathitem.h \
     grid.h \
     myalgorithm.h \
-    ccrashstack.h
+    ccrashstack.h \
+    persistence.h
 
 FORMS    += mainwindow.ui \
     canvaswidget.ui

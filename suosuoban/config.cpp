@@ -1,4 +1,6 @@
+#include <cassert>
 #include "config.h"
+
 
 Config* Config::config=NULL;
 
@@ -12,9 +14,10 @@ QString widthTwo(QString str){
     if (str.length()==2){
         return str;
     }
-    if (str.length()>2){
-        return str.left(2);
-    }
+
+    return str.left(2);
+
+
 }
 
 QColor hexStrToColor(QString strColor){
@@ -85,6 +88,16 @@ QColor Config::backColor()
 void Config::backColor(QColor val)
 {
     settings->setValue("canvas/backgroundcolor",colorToHexStr(val));
+}
+
+int Config::numHistory()
+{
+    return settings->value("history/num",50).toInt();
+}
+
+void Config::numHistory(int val)
+{
+    settings->setValue("history/num",val);
 }
 
 int Config::penWidth(){

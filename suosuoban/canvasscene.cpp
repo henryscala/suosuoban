@@ -2,8 +2,10 @@
 
 #include <cassert>
 #include <iostream>
+#include <cmath>
 #include "geom.h"
 #include "config.h"
+#include "persistence.h"
 
 using namespace std;
 
@@ -13,6 +15,7 @@ CanvasScene::CanvasScene(QObject *parent)
     currPathItem = NULL;
     isMouseDown = false;
     isModKeyDown = false;
+    isShowCluster = true;
     canvasMode = MODE_DRAW;
 
     QBrush brush(Config::instance()->backColor());
@@ -87,8 +90,17 @@ void CanvasScene::canvasColorChange(CanvasColorType colorType, QColor color)
     }
 }
 
+void CanvasScene::setShowCluster(bool show)
+{
+    isShowCluster = show;
+    calcContour();
+}
+
 void CanvasScene::delCluster()
 {
+    if (!isShowCluster){
+        return;
+    }
 
     if (canvasMode != MODE_CLUSTER){
         return;
@@ -103,6 +115,16 @@ void CanvasScene::delCluster()
         int idx = selectedClusterIndices[i];
         PathCluster* cluster = pathClusters[idx];
         pathClusters.removeAt(idx);
+
+        //undo/redo handling
+        PolyLineCluster plCluster;
+        for (int k=0; k<cluster->size();k++){
+            PolyLine *polyLine = new PolyLine();
+            *polyLine = (*cluster)[k]->points;
+            plCluster << polyLine;
+        }
+        history::delPolyLineCluster(plCluster);
+
         clearPathCluster(&cluster);
     }
     selectedClusterIndices.clear();
@@ -215,6 +237,7 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
                 for (int k=cluster->size()-1; k >=0 ; k--){
                     QMyPathItem* item = (*cluster)[k];
                     if (isPathIntersect(item->points, currPathItem->points)){
+                        history::delPolyLine(item->points);
                         removePathItem(pathClusters,item);
                     }
                 }
@@ -268,6 +291,7 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     if (canvasMode == MODE_DRAW){
         if (currPathItem){
             if (currPathItem->points.size() > 1){
+                history::addPolyLine(currPathItem->points);//for undo/redo
                 addPathItem(pathClusters,currPathItem);
                 currPathItem = NULL;
             }
@@ -384,6 +408,10 @@ void CanvasScene::calcContour()
         delete contourItem;
     }
     contourItems.clear();
+
+    if(!isShowCluster){
+        return;
+    }
 
     //generate new ones
     for (i=0; i < pathClusters.size(); i++){

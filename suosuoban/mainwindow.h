@@ -24,7 +24,9 @@ public slots:
     void test();
     void canvasModeChange();
     void canvasColorChange();
+    void showClusterChange();
     void delCluster();
+    void undoRedo();
 protected:
     void createActions();
     void createMenus();
@@ -43,10 +45,17 @@ private:
     QAction *drawModeAction;
     QAction *clusterModeAction;
     QAction *eraseModeAction;
-    QAction *delClusterAction;
+
     QAction *showHideClusterAction;
 
+    QAction *delClusterAction;
+    QAction *undoAction;
+    QAction *redoAction;
 
+    QAction *saveAction;
+    QAction *saveAsAction;
+    QAction *openAction;
+    QAction *exitAction;
 };
 
 

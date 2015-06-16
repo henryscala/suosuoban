@@ -35,6 +35,7 @@ public:
 
     void canvasModeChange(CanvasMode mode);
     void canvasColorChange(CanvasColorType colorType, QColor color);
+    void setShowCluster(bool show);
     void delCluster();
 public slots:
 
@@ -66,6 +67,7 @@ private:
 
     bool isMouseDown;
     bool isModKeyDown;
+    bool isShowCluster;
     CanvasMode canvasMode;
 
 };

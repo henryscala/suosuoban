@@ -2,7 +2,7 @@
 #define GEOM_H
 
 #include <QtWidgets>
-#include "vec2.h"
+
 #include "grid.h"
 #include "config.h"
 
@@ -16,8 +16,7 @@
 #define RIGHT  1
 #define LEFT  -1
 
-typedef Vec2<double> VecDouble;
-typedef Vec2<int> VecInt;
+
 
 typedef QList<QPointF> PolyLine;
 typedef QList<PolyLine*> PolyLineCluster;
@@ -84,10 +83,7 @@ int nextIndex(const QList<T>& list, int currIndex){
 
 qreal minElem(const QList<qreal> &list);
 
-QPointF vecDouble2qpointf(VecDouble);
-VecDouble qpointf2vecDouble(QPointF);
-VecInt vecDouble2vecInt(VecDouble);
-VecDouble vecInt2vecDouble(VecInt);
+
 
 
 void fillCircle(QPointF point, qreal radius, Grid<unsigned char>& gridBoard);

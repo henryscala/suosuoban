@@ -34,7 +34,8 @@ public:
     QColor backColor();
     void backColor(QColor val);
 
-
+    int numHistory();
+    void numHistory(int val);
 };
 
 
