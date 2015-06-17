@@ -21,13 +21,15 @@ public:
     void resizeEvent(QResizeEvent *event);
 
 public slots:
-    void test();
+
     void canvasModeChange();
     void canvasColorChange();
     void showClusterChange();
     void delCluster();
     void undoRedo();
+    void updateActionsState();
 protected:
+
     void createActions();
     void createMenus();
     QIcon createIcon(QColor color);

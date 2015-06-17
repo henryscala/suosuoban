@@ -15,9 +15,10 @@ namespace history {
     void addPolyLine(PolyLine& pl);
     void delPolyLine(PolyLine& pl);
     void delPolyLineCluster(PolyLineCluster& plc);
-    bool gotoPrev();
-    bool gotoNext();
-    const PolyLineOp* getOp();
+    bool isUndoable();
+    bool isRedoable();
+    const PolyLineOp& undo();
+    const PolyLineOp& redo();
 
 }
 

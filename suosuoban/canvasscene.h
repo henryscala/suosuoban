@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include "qmypathitem.h"
+#include "persistence.h"
 
 #include "geom.h"
 
@@ -37,7 +38,15 @@ public:
     void canvasColorChange(CanvasColorType colorType, QColor color);
     void setShowCluster(bool show);
     void delCluster();
+    void undo(const history::PolyLineOp &op);
+    void redo(const history::PolyLineOp &op);
+
+    QList<int> selectedClusterIndices;
+    PathClusters pathClusters;
 public slots:
+
+signals:
+    void sceneChanged();
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
@@ -58,11 +67,15 @@ protected:
     void getAllPoints(PathCluster &cluster, /* out */ QList<QPointF>& points);
     qreal dist(const PolyLine& polyLine, const PathCluster& cluster);
     void excludeClustersFarAway(const PathClusters& clusters,const QMyPathItem &pathItem,/*out*/ PathClusters& subset);
+    void removeEmptyCluster();
+
+    QMyPathItem* findPathItem(const PolyLine &pl);
+    QMyPathItem* createPathItem();
 private:
     QMyPathItem* currPathItem;
-    PathClusters pathClusters;
+
     QList<QMyPathItem*> contourItems;
-    QList<int> selectedClusterIndices;
+
     PathClusters movingClusters;
 
     bool isMouseDown;

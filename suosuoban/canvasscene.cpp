@@ -131,6 +131,81 @@ void CanvasScene::delCluster()
     calcContour();
 }
 
+void CanvasScene::undo(const history::PolyLineOp &op)
+{
+    PolyLine* pl;
+    QMyPathItem* item;
+
+    switch(op.opType){
+    case history::ADD:
+        pl=op.polyLineCluster[0];
+        item=findPathItem(*pl);
+        assert(item);
+        removePathItem(pathClusters,item);
+        removeEmptyCluster();
+        break;
+    case history::DEL:
+        pl=op.polyLineCluster[0];
+        item=createPathItem();
+        item->points = *pl;
+        item->setSelfPath(false,false);
+        addPathItem(pathClusters,item);
+        break;
+    case history::DEL_CLUSTER:
+        const PolyLineCluster& cluster=op.polyLineCluster;
+        for (int i=0;i<cluster.size();i++){
+            pl=cluster.at(i);
+            item=createPathItem();
+            item->points = *pl;
+            item->setSelfPath(false,false);
+            addPathItem(pathClusters,item);
+        }
+        rebuildPathClusters();
+
+        break;
+    }
+
+    calcContour();
+}
+
+void CanvasScene::redo(const history::PolyLineOp &op)
+{
+    PolyLine* pl;
+    QMyPathItem* item;
+
+    switch(op.opType){
+    case history::DEL:
+        pl=op.polyLineCluster[0];
+        item=findPathItem(*pl);
+        assert(item);
+        removePathItem(pathClusters,item);
+        removeEmptyCluster();
+        break;
+    case history::ADD:
+        pl=op.polyLineCluster[0];
+        item=createPathItem();
+        item->points = *pl;
+        item->setSelfPath(false,false);
+        addPathItem(pathClusters,item);
+        break;
+    case history::DEL_CLUSTER:
+        const PolyLineCluster& cluster=op.polyLineCluster;
+        for (int i=0;i<cluster.size();i++){
+            pl=cluster.at(i);
+            item=findPathItem(*pl);
+            assert(item);
+            removePathItem(pathClusters,item);
+
+        }
+        removeEmptyCluster();
+        rebuildPathClusters();
+
+        break;
+    }
+
+    calcContour();
+}
+
 
 
 void CanvasScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
@@ -146,12 +221,7 @@ void CanvasScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
     if (!currPathItem){
         delete currPathItem;
     }
-    currPathItem = new QMyPathItem();
-    this->addItem(currPathItem);
-    QPen defaultPen ;
-    defaultPen.setWidth(Config::instance()->penWidth());
-    defaultPen.setColor(Config::instance()->penColor());
-    currPathItem->setPen(defaultPen);
+    currPathItem = createPathItem();
     currPathItem->addPoint(point);
 
     if (canvasMode == MODE_DRAW){
@@ -243,14 +313,8 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
                 }
             }
 
-            //remove empty cluster
-            for (int i=pathClusters.size()-1; i>=0; i--){
-                PathCluster* cluster = pathClusters[i];
-                if (cluster->size() <= 0){
-                    pathClusters.removeAt(i);
-                    delete cluster;
-                }
-            }
+            removeEmptyCluster();
+
         }
 
     } else if (canvasMode == MODE_CLUSTER ) {
@@ -350,6 +414,8 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     isMouseDown = false;
 
     calcContour();
+
+    emit sceneChanged();
 
     QGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
@@ -600,4 +666,54 @@ void CanvasScene::excludeClustersFarAway(const PathClusters &clusters, const QMy
     }
 
 
+}
+
+void CanvasScene::removeEmptyCluster()
+{
+
+    //remove empty cluster
+    for (int i=pathClusters.size()-1; i>=0; i--){
+        PathCluster* cluster = pathClusters[i];
+        if (cluster->size() <= 0){
+            pathClusters.removeAt(i);
+            delete cluster;
+        }
+    }
+}
+
+QMyPathItem *CanvasScene::findPathItem(const PolyLine &pl)
+{
+    QMyPathItem *item = NULL;
+    for (int i=0; i<pathClusters.size();i++){
+        for (int k=0;k<pathClusters[i]->size();k++){
+            item=(*(pathClusters[i]))[k];
+            if (item->points.size() != pl.size()){
+                continue;
+            }
+            int t;
+            for (t=0;t<pl.size();t++){
+                QPointF pa = pl[t];
+                QPointF pb = item->points[t];
+                //pa != pb
+                if (!(closeToZero(pa.x()-pb.x()) && closeToZero(pa.y()-pb.y()))){
+                    break;
+                }
+            }
+            if (t>=pl.size()){
+                return item;
+            }
+        }
+    }
+    return NULL;
+}
+
+QMyPathItem *CanvasScene::createPathItem()
+{
+    QMyPathItem* item = new QMyPathItem();
+    this->addItem(item);
+    QPen defaultPen ;
+    defaultPen.setWidth(Config::instance()->penWidth());
+    defaultPen.setColor(Config::instance()->penColor());
+    item->setPen(defaultPen);
+    return item;
 }

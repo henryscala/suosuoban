@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "QtWidgets"
+#include "persistence.h"
+#include <QtWidgets>
 #include <iostream>
 #include <cassert>
 using namespace std;
@@ -24,7 +25,10 @@ MainWindow::MainWindow(QWidget *parent) :
     setUnifiedTitleAndToolBarOnMac(true);
 
     createActions();
+    updateActionsState();
     createMenus();
+
+    connect(scene,SIGNAL(sceneChanged()),this,SLOT(updateActionsState()));
 }
 
 MainWindow::~MainWindow()
@@ -92,6 +96,25 @@ void MainWindow::createActions()
     exitAction = new QAction(tr("e&Xit"),this);
 }
 
+void MainWindow::updateActionsState()
+{
+    undoAction->setEnabled(history::isUndoable());
+    redoAction->setEnabled(history::isRedoable());
+
+    eraseModeAction->setEnabled(scene->pathClusters.size()>0);
+
+    bool isModeCluster = clusterModeAction->isChecked();
+    delClusterAction->setEnabled(isModeCluster && scene->selectedClusterIndices.size() > 0);
+
+    bool showCluster = showHideClusterAction->isChecked();
+    clusterModeAction->setEnabled(showCluster);
+    if (!showCluster){
+        if (clusterModeAction->isChecked()){
+            drawModeAction->activate(QAction::Trigger);//trigger action by program
+        }
+    }
+}
+
 void MainWindow::createMenus()
 {
     QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
@@ -131,10 +154,7 @@ QIcon MainWindow::createIcon(QColor color)
     return QIcon(bmp);
 }
 
-void MainWindow::test()
-{
-    cout << "test clicked" << endl;
-}
+
 
 void MainWindow::canvasModeChange()
 {
@@ -156,6 +176,8 @@ void MainWindow::canvasModeChange()
     } else {
         assert(false);
     }
+
+    updateActionsState();
 }
 
 void MainWindow::canvasColorChange()
@@ -190,12 +212,15 @@ void MainWindow::showClusterChange()
     bool isChecked = showHideClusterAction->isChecked();
 
     scene->setShowCluster(isChecked);
+
+    updateActionsState();
 }
 
 void MainWindow::delCluster()
 {
     scene->delCluster();
 
+    updateActionsState();
 }
 
 void MainWindow::undoRedo()
@@ -203,12 +228,32 @@ void MainWindow::undoRedo()
     QAction * action=(QAction*)sender();
     if (action == undoAction){
         cout << " undo clicked" << endl;
+
+        if (!history::isUndoable()){
+            return;
+        }
+
+        const history::PolyLineOp &op=history::undo();
+        scene->undo(op);
+        updateActionsState();
         return;
     }
     if (action == redoAction){
         cout << " redo clicked" << endl;
+
+        if (!history::isRedoable()){
+            return;
+        }
+
+        const history::PolyLineOp &op=history::redo();
+        scene->redo(op);
+        updateActionsState();
         return;
     }
     assert(false);
+
+
 }
+
+
 
