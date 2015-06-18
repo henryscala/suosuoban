@@ -1,25 +1,23 @@
 #ifndef PERSISTENCE_H
 #define PERSISTENCE_H
-#include "geom.h"
+#include <QList>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include "qmypathitem.h"
 
-namespace history {
-    enum PolyLineOpTypes{
-        ADD,DEL,DEL_CLUSTER
-    };
 
-    struct PolyLineOp{
-        PolyLineOpTypes opType;
-        PolyLineCluster polyLineCluster;
-    };
 
-    void addPolyLine(PolyLine& pl);
-    void delPolyLine(PolyLine& pl);
-    void delPolyLineCluster(PolyLineCluster& plc);
-    bool isUndoable();
-    bool isRedoable();
-    const PolyLineOp& undo();
-    const PolyLineOp& redo();
+class ScenePersistence{
+private:
 
-}
+    void pathItemToJson(const QMyPathItem* item,QJsonObject &jsonObject);
+    void pathItemsToJson(const QList<QMyPathItem*>& items, QJsonArray& array);
+public:
+    bool saveToFile(QString fileName,const QList<QMyPathItem*> &pathItems);
+    bool loadFromFile(QString fileName, QList<QMyPathItem*>& pathItems );
+
+};
+
 
 #endif // PERSISTENCE_H

@@ -22,8 +22,6 @@ QMAKE_LFLAGS_DEBUG = -mthreads
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    cyclelist.cpp \
-    vec2.cpp \
     geom.cpp \
     config.cpp \
     canvasscene.cpp \
@@ -31,11 +29,10 @@ SOURCES += main.cpp\
     grid.cpp \
     myalgorithm.cpp \
     ccrashstack.cpp \
-    persistence.cpp
+    persistence.cpp \
+    history.cpp
 
 HEADERS  += mainwindow.h \
-    cyclelist.h \
-    vec2.h \
     geom.h \
     config.h \
     canvasscene.h \
@@ -43,7 +40,8 @@ HEADERS  += mainwindow.h \
     grid.h \
     myalgorithm.h \
     ccrashstack.h \
-    persistence.h
+    persistence.h \
+    history.h
 
 FORMS    += mainwindow.ui \
     canvaswidget.ui

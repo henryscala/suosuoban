@@ -3,6 +3,9 @@
 #include <QSettings>
 #include <QColor>
 
+QColor hexStrToColor(QString strColor);
+QString colorToHexStr(QColor color);
+
 class Config
 {
 private:

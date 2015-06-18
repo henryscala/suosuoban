@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "persistence.h"
+#include "history.h"
 #include <QtWidgets>
 #include <iostream>
 #include <cassert>
@@ -91,6 +91,7 @@ void MainWindow::createActions()
     connect(redoAction,SIGNAL(triggered()),this, SLOT(undoRedo()));
 
     saveAction = new QAction(tr("&Save"),this);
+    connect(saveAction,SIGNAL(triggered()),this,SLOT(saveFile()));
     openAction = new QAction(tr("&Open"),this);
     saveAsAction = new QAction(tr("Save &As..."),this);
     exitAction = new QAction(tr("e&Xit"),this);
@@ -114,6 +115,8 @@ void MainWindow::updateActionsState()
         }
     }
 }
+
+
 
 void MainWindow::createMenus()
 {
@@ -177,6 +180,13 @@ void MainWindow::canvasModeChange()
         assert(false);
     }
 
+    updateActionsState();
+}
+
+void MainWindow::saveFile()
+{
+    QString fileName = QFileDialog::getSaveFileName(this);
+    scene->saveFile(fileName);
     updateActionsState();
 }
 

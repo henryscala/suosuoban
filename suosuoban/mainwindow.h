@@ -28,6 +28,7 @@ public slots:
     void delCluster();
     void undoRedo();
     void updateActionsState();
+    void saveFile();
 protected:
 
     void createActions();

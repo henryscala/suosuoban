@@ -3,7 +3,7 @@
 
 #include <QtWidgets>
 #include "qmypathitem.h"
-#include "persistence.h"
+#include "history.h"
 
 #include "geom.h"
 
@@ -34,6 +34,7 @@ public:
     explicit CanvasScene(QObject *parent);
     ~CanvasScene();
 
+    bool saveFile(QString fileName);
     void canvasModeChange(CanvasMode mode);
     void canvasColorChange(CanvasColorType colorType, QColor color);
     void setShowCluster(bool show);

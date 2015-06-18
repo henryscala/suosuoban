@@ -7,6 +7,7 @@
 #include "config.h"
 #include "persistence.h"
 
+
 using namespace std;
 
 CanvasScene::CanvasScene(QObject *parent)
@@ -31,6 +32,15 @@ CanvasScene::~CanvasScene()
 
     clearPathClusters(pathClusters);
     clearPathClusters(movingClusters);
+}
+
+bool CanvasScene::saveFile(QString fileName)
+{
+    QList<QMyPathItem *> items;
+    getAllPathItems(items);
+    ScenePersistence marshal;
+    marshal.saveToFile(fileName,items);
+
 }
 
 void CanvasScene::clearPathClusters(PathClusters& clusters){
