@@ -2,10 +2,14 @@
 #define QMYPATHITEM_H
 #include <QGraphicsPathItem>
 #include <QList>
+#include <QColor>
+#include <QGraphicsScene>
 
 class QMyPathItem:public QGraphicsPathItem
 {
 public:
+
+    QMyPathItem(int penWidth,QColor penColor,QGraphicsScene* parent);
     QMyPathItem();
     ~QMyPathItem();
     void addPoint(QPointF);

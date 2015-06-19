@@ -35,9 +35,11 @@ public:
     ~CanvasScene();
 
     bool saveFile(QString fileName);
+    bool readFile(QString fileName);
     void canvasModeChange(CanvasMode mode);
     void canvasColorChange(CanvasColorType colorType, QColor color);
     void setShowCluster(bool show);
+    void selectAll();
     void delCluster();
     void undo(const history::PolyLineOp &op);
     void redo(const history::PolyLineOp &op);

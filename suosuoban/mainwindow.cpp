@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include "history.h"
 #include <QtWidgets>
-#include <iostream>
+
 #include <cassert>
 using namespace std;
 
@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
+
     view = new QGraphicsView(scene);
 
     setCentralWidget(view);
@@ -27,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     createActions();
     updateActionsState();
     createMenus();
+    createToolBar();
 
     connect(scene,SIGNAL(sceneChanged()),this,SLOT(updateActionsState()));
 }
@@ -50,26 +52,46 @@ void MainWindow::createActions()
     drawModeAction->setCheckable(true);
     drawModeAction->setChecked(true);
     drawModeAction->setData((int)MODE_DRAW);
+    drawModeAction->setShortcut(tr("D"));
+    drawModeAction->setIcon(QIcon("icons/pen.png"));
     connect(drawModeAction,SIGNAL(triggered()),this,SLOT(canvasModeChange()));
 
     eraseModeAction = new QAction(tr("&Erase"),this);
     eraseModeAction->setCheckable(true);
     eraseModeAction->setData((int)MODE_ERASE);
+    eraseModeAction->setShortcut(tr("E"));
+    eraseModeAction->setIcon(QIcon("icons/erase.png"));
     connect(eraseModeAction,SIGNAL(triggered()),this,SLOT(canvasModeChange()));
 
     clusterModeAction = new QAction(tr("&Cluster"),this);
     clusterModeAction->setCheckable(true);
     clusterModeAction->setData((int)MODE_CLUSTER);
+    clusterModeAction->setShortcut(tr("C"));
+    clusterModeAction->setIcon(QIcon("icons/bubble.png"));
     connect(clusterModeAction,SIGNAL(triggered()),this,SLOT(canvasModeChange()));
 
     showHideClusterAction = new QAction(tr("&Show Cluster"),this);
     showHideClusterAction->setCheckable(true);
     showHideClusterAction->setChecked(true);//checked means Showing Cluster
+    showHideClusterAction->setShortcut(tr("H"));
+    showHideClusterAction->setIcon(QIcon("icons/eye.png"));
     connect(showHideClusterAction,SIGNAL(triggered()),this,SLOT(showClusterChange()));
+
+    incHeightAction =  new QAction(tr("&Increase Height"),this);
+    incHeightAction->setShortcut(tr("]"));
+    connect(incHeightAction,SIGNAL(triggered()),this,SLOT(changeSceneSize()));
+    decHeightAction =  new QAction(tr("&Decrease Height"),this);
+    decHeightAction->setShortcut(tr("["));
+    connect(decHeightAction,SIGNAL(triggered()),this,SLOT(changeSceneSize()));
+    incWidthAction =  new QAction(tr("I&ncrease Width"),this);
+    connect(incWidthAction,SIGNAL(triggered()),this,SLOT(changeSceneSize()));
+    decWidthAction =  new QAction(tr("D&ecrease Width"),this);
+    connect(decWidthAction,SIGNAL(triggered()),this,SLOT(changeSceneSize()));
 
     colorPenAction = new QAction(tr("&Pen"),this);
     colorPenAction->setData((int)COLOR_TYPE_PEN);
     colorPenAction->setIcon(createIcon(Config::instance()->penColor()));
+    colorPenAction->setShortcut(tr("P"));
     connect(colorPenAction,SIGNAL(triggered()),this,SLOT(canvasColorChange()));
 
     colorBackAction = new QAction(tr("&Background"),this);
@@ -82,19 +104,41 @@ void MainWindow::createActions()
     colorClusterAction->setIcon(createIcon(Config::instance()->clusterColor()));
     connect(colorClusterAction,SIGNAL(triggered()),this,SLOT(canvasColorChange()));
 
+    selectAllAction = new QAction(tr("Select &All"),this);
+    selectAllAction->setShortcut(tr("A"));
+    selectAllAction->setIcon(QIcon("icons/hand.png"));
+    connect(selectAllAction,SIGNAL(triggered()),this, SLOT(selectAll()));
     delClusterAction = new QAction(tr("&Delete"),this);
+    delClusterAction->setShortcut(tr("X"));
+    delClusterAction->setIcon(style()->standardIcon(QStyle::SP_DialogDiscardButton));
     connect(delClusterAction,SIGNAL(triggered()),this,SLOT(delCluster()));
 
     undoAction =  new QAction(tr("&Undo"),this);
+    undoAction->setIcon( style()->standardIcon(QStyle::SP_ArrowBack) );
+    undoAction->setShortcut(tr("U"));
     connect(undoAction,SIGNAL(triggered()),this, SLOT(undoRedo()));
+
     redoAction =  new QAction(tr("&Redo"),this);
+    redoAction->setIcon( style()->standardIcon(QStyle::SP_ArrowForward) );
+    redoAction->setShortcut(tr("R"));
     connect(redoAction,SIGNAL(triggered()),this, SLOT(undoRedo()));
 
+
     saveAction = new QAction(tr("&Save"),this);
+    saveAction->setShortcut(tr("Ctrl+S"));
+    saveAction->setIcon( style()->standardIcon(QStyle::SP_DialogSaveButton) );
     connect(saveAction,SIGNAL(triggered()),this,SLOT(saveFile()));
+
     openAction = new QAction(tr("&Open"),this);
-    saveAsAction = new QAction(tr("Save &As..."),this);
+    openAction->setShortcut(tr("Ctrl+O"));
+    openAction->setIcon( style()->standardIcon(QStyle::SP_DialogOpenButton) );
+    connect(openAction,SIGNAL(triggered()),this,SLOT(readFile()));
+    //saveAsAction = new QAction(tr("Save &As..."),this);
     exitAction = new QAction(tr("e&Xit"),this);
+    connect(exitAction,SIGNAL(triggered()),this,SLOT(close()));
+
+    helpAboutAction = new QAction(tr("&About..."),this);
+    connect(helpAboutAction,SIGNAL(triggered()),this,SLOT(helpAbout()));
 }
 
 void MainWindow::updateActionsState()
@@ -106,6 +150,7 @@ void MainWindow::updateActionsState()
 
     bool isModeCluster = clusterModeAction->isChecked();
     delClusterAction->setEnabled(isModeCluster && scene->selectedClusterIndices.size() > 0);
+    selectAllAction->setEnabled(isModeCluster && scene->pathClusters.size()>0);
 
     bool showCluster = showHideClusterAction->isChecked();
     clusterModeAction->setEnabled(showCluster);
@@ -122,7 +167,7 @@ void MainWindow::createMenus()
 {
     QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(saveAction);
-    fileMenu->addAction(saveAsAction);
+    //fileMenu->addAction(saveAsAction);
     fileMenu->addAction(openAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
@@ -131,14 +176,22 @@ void MainWindow::createMenus()
     editMenu->addAction(undoAction);
     editMenu->addAction(redoAction);
     editMenu->addSeparator();
+    editMenu->addAction(selectAllAction);
     editMenu->addAction(delClusterAction);
 
     QMenu* modeMenu = menuBar()->addMenu(tr("&Mode"));
     modeMenu->addAction(drawModeAction);
     modeMenu->addAction(eraseModeAction);
     modeMenu->addAction(clusterModeAction);
-    modeMenu->addSeparator();
-    modeMenu->addAction( showHideClusterAction );
+
+    QMenu* viewMenu = menuBar()->addMenu(tr("&View"));
+    viewMenu->addAction( showHideClusterAction );
+    viewMenu->addSeparator();
+    viewMenu->addAction(incHeightAction);
+    viewMenu->addAction(decHeightAction);
+    viewMenu->addAction(incWidthAction);
+    viewMenu->addAction(decWidthAction);
+
 
 
     QMenu* colorMenu = menuBar()->addMenu(tr("&Color"));
@@ -147,7 +200,40 @@ void MainWindow::createMenus()
     colorMenu->addAction(colorClusterAction);
 
     QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(helpAboutAction);
 
+}
+
+void MainWindow::createToolBar()
+{
+    QToolBar *toolBar = this->addToolBar(tr("Tools"));
+    toolBar->addAction(colorPenAction);
+    toolBar->addAction(drawModeAction);
+    toolBar->addAction(eraseModeAction);
+    toolBar->addAction(clusterModeAction);
+    toolBar->addAction(showHideClusterAction);
+    toolBar->addAction(selectAllAction);
+    toolBar->addAction(delClusterAction);
+    toolBar->addAction(undoAction);
+    toolBar->addAction(redoAction);
+}
+
+void MainWindow::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu contextMenu(this);
+
+    contextMenu.addAction(colorPenAction);
+    contextMenu.addAction(drawModeAction);
+
+    contextMenu.addAction(eraseModeAction);
+    contextMenu.addAction(clusterModeAction);
+    contextMenu.addAction(showHideClusterAction);
+    contextMenu.addAction(selectAllAction);
+    contextMenu.addAction(delClusterAction);
+    contextMenu.addAction(undoAction);
+    contextMenu.addAction(redoAction);
+
+    contextMenu.exec(event->globalPos());
 }
 
 QIcon MainWindow::createIcon(QColor color)
@@ -156,6 +242,8 @@ QIcon MainWindow::createIcon(QColor color)
     bmp.fill(color);
     return QIcon(bmp);
 }
+
+
 
 
 
@@ -188,6 +276,67 @@ void MainWindow::saveFile()
     QString fileName = QFileDialog::getSaveFileName(this);
     scene->saveFile(fileName);
     updateActionsState();
+}
+
+void MainWindow::readFile()
+{
+    QString fileName = QFileDialog::getOpenFileName(this);
+    scene->readFile(fileName);
+    updateActionsState();
+}
+
+void MainWindow::changeSceneSize()
+{
+    QAction * action=(QAction*)sender();
+    bool isHeight = false;
+    int sign = 1;
+    if (action == incHeightAction){
+        isHeight = true;
+        sign = 1;
+    } else if (action == decHeightAction){
+        isHeight = true;
+        sign = -1;
+    } else if (action == incWidthAction){
+        isHeight = false;
+        sign = 1;
+    } else if (action == decWidthAction){
+        isHeight = false;
+        sign = - 1;
+    } else {
+        Q_ASSERT(false);
+    }
+
+    qreal curX = scene->sceneRect().x();
+    qreal curY = scene->sceneRect().y();
+    qreal curWidth = scene->sceneRect().width();
+    qreal curHeight = scene->sceneRect().height();
+    qreal newWidth=curWidth;
+    qreal newHeight=curHeight;
+    if (isHeight){
+        newHeight += sign * this->geometry().height();
+        if (newHeight <= 0){
+            newHeight=curHeight;
+        }
+    } else {
+        newWidth  += sign * this->geometry().width();
+        if (newWidth <=0){
+            newWidth=curWidth;
+        }
+    }
+    scene->setSceneRect(curX,curY,newWidth,newHeight);
+
+}
+
+void MainWindow::helpAbout()
+{
+    QString text =tr(
+            "Suosuoban is an illustrator software bring to you by Qinmishu.org."
+            "It is a free and opensourced software without any warrant."
+            "Visit our web site <a href=\"http://Qinmishu.org\">http://Qinmishu.org</a> "
+            "and the project site <a href=\"https://github.com/henryscala/suosuoban\">https://github.com/henryscala/suosuoban</a> "
+            "to find more."
+                );
+    QMessageBox::about(this,tr("Suosuoban, by Qinmishu.org"),text);
 }
 
 void MainWindow::canvasColorChange()
@@ -226,6 +375,12 @@ void MainWindow::showClusterChange()
     updateActionsState();
 }
 
+void MainWindow::selectAll()
+{
+    scene->selectAll();
+    updateActionsState();
+}
+
 void MainWindow::delCluster()
 {
     scene->delCluster();
@@ -237,7 +392,7 @@ void MainWindow::undoRedo()
 {
     QAction * action=(QAction*)sender();
     if (action == undoAction){
-        cout << " undo clicked" << endl;
+
 
         if (!history::isUndoable()){
             return;
@@ -249,7 +404,7 @@ void MainWindow::undoRedo()
         return;
     }
     if (action == redoAction){
-        cout << " redo clicked" << endl;
+
 
         if (!history::isRedoable()){
             return;

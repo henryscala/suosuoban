@@ -50,5 +50,31 @@ bool ScenePersistence::saveToFile(QString fileName, const QList<QMyPathItem *> &
 
 bool ScenePersistence::loadFromFile(QString fileName, QList<QMyPathItem *> &pathItems)
 {
+    QFile loadFile(fileName);
 
+    if (!loadFile.open(QIODevice::ReadOnly)) {
+        qWarning("Couldn't open  file.");
+        return false;
+    }
+
+    QByteArray saveData = loadFile.readAll();
+    QJsonDocument loadDoc(QJsonDocument::fromJson(saveData));
+
+    QJsonArray itemsArray = loadDoc.array();
+    for (int i=0; i< itemsArray.size(); i++){
+        QJsonObject itemObj=itemsArray[i].toObject();
+        QColor color = hexStrToColor( itemObj["color"].toString() );
+        QJsonArray pointArray= itemObj["polyline"].toArray();
+
+
+        QMyPathItem *pathItem =  new QMyPathItem(Config::instance()->penWidth(),color,NULL);
+        for (int k=0; k< pointArray.size(); k++){
+            QPointF point;
+            point.setX(pointArray[k].toObject()["x"].toDouble());
+            point.setY(pointArray[k].toObject()["y"].toDouble());
+            pathItem->points << point;
+        }
+        pathItems << pathItem;
+    }
+    return true;
 }

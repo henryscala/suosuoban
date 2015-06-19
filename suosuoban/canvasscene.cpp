@@ -1,7 +1,7 @@
 #include "canvasscene.h"
 
 #include <cassert>
-#include <iostream>
+
 #include <cmath>
 #include "geom.h"
 #include "config.h"
@@ -39,7 +39,25 @@ bool CanvasScene::saveFile(QString fileName)
     QList<QMyPathItem *> items;
     getAllPathItems(items);
     ScenePersistence marshal;
-    marshal.saveToFile(fileName,items);
+    return marshal.saveToFile(fileName,items);
+
+}
+
+bool CanvasScene::readFile(QString fileName)
+{
+    QList<QMyPathItem *> items;
+    ScenePersistence unmarshal;
+    unmarshal.loadFromFile(fileName,items);
+    clearPathClusters(pathClusters);
+
+    QListIterator<QMyPathItem*> it(items);
+    while (it.hasNext()){
+        QMyPathItem* item = it.next();
+        this->addItem(item);
+        item->setSelfPath(false,false);
+        addPathItem(pathClusters,item);
+    }
+    calcContour();
 
 }
 
@@ -72,7 +90,7 @@ void CanvasScene::canvasModeChange(CanvasMode mode)
 
 
     canvasMode=mode;
-    cout << "canvasMode " << canvasMode << endl;
+
 
 
     selectedClusterIndices.clear();
@@ -103,6 +121,17 @@ void CanvasScene::canvasColorChange(CanvasColorType colorType, QColor color)
 void CanvasScene::setShowCluster(bool show)
 {
     isShowCluster = show;
+    calcContour();
+}
+
+void CanvasScene::selectAll()
+{
+    selectedClusterIndices.clear();
+
+    for (int i=0;i<pathClusters.size();i++){
+        selectedClusterIndices << i;
+    }
+
     calcContour();
 }
 
@@ -150,9 +179,10 @@ void CanvasScene::undo(const history::PolyLineOp &op)
     case history::ADD:
         pl=op.polyLineCluster[0];
         item=findPathItem(*pl);
-        assert(item);
-        removePathItem(pathClusters,item);
-        removeEmptyCluster();
+        if(item){
+            removePathItem(pathClusters,item);
+            removeEmptyCluster();
+        }
         break;
     case history::DEL:
         pl=op.polyLineCluster[0];
@@ -187,9 +217,10 @@ void CanvasScene::redo(const history::PolyLineOp &op)
     case history::DEL:
         pl=op.polyLineCluster[0];
         item=findPathItem(*pl);
-        assert(item);
-        removePathItem(pathClusters,item);
-        removeEmptyCluster();
+        if(item){
+            removePathItem(pathClusters,item);
+            removeEmptyCluster();
+        }
         break;
     case history::ADD:
         pl=op.polyLineCluster[0];
@@ -203,8 +234,9 @@ void CanvasScene::redo(const history::PolyLineOp &op)
         for (int i=0;i<cluster.size();i++){
             pl=cluster.at(i);
             item=findPathItem(*pl);
-            assert(item);
-            removePathItem(pathClusters,item);
+            if(item){
+                removePathItem(pathClusters,item);
+            }
 
         }
         removeEmptyCluster();
@@ -245,7 +277,7 @@ void CanvasScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
             clusterItem = contourItems[i];
             if (pointInPolygon(point,clusterItem->points)){
                 seledtedIdx = i;
-                cout << "selected idx " << seledtedIdx << endl;
+
                 break;
             }
         }
@@ -438,7 +470,7 @@ void CanvasScene::keyPressEvent ( QKeyEvent * event )
             || event->key() ==Qt::Key_Shift)
     {
         isModKeyDown = true;
-        cout << "key press " << event->key() << endl;
+
     }
 }
 
@@ -449,7 +481,7 @@ void CanvasScene::keyReleaseEvent(QKeyEvent *event)
             || event->key() ==Qt::Key_Shift)
     {
         isModKeyDown = false;
-        cout << "key release " << event->key() << endl ;
+
     }
 
 }
@@ -569,7 +601,7 @@ void CanvasScene::addPathItem(PathClusters& clusters,QMyPathItem *pathItem)
         delete cluster;
     }
 
-    cout << " cluster number is " << clusters.size() << endl;
+
 }
 
 void CanvasScene::removePathItem(PathClusters &clusters, QMyPathItem *pathItem)
@@ -719,11 +751,9 @@ QMyPathItem *CanvasScene::findPathItem(const PolyLine &pl)
 
 QMyPathItem *CanvasScene::createPathItem()
 {
-    QMyPathItem* item = new QMyPathItem();
-    this->addItem(item);
-    QPen defaultPen ;
-    defaultPen.setWidth(Config::instance()->penWidth());
-    defaultPen.setColor(Config::instance()->penColor());
-    item->setPen(defaultPen);
+    QMyPathItem* item = new QMyPathItem(Config::instance()->penWidth(),
+                                        Config::instance()->penColor(),
+                                        this);
+
     return item;
 }

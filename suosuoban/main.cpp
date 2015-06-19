@@ -4,10 +4,10 @@
 
 #include <cassert>
 #include "geom.h"
-#include <iostream>
+
 using namespace std;
 
-
+#if 0
 long __stdcall   callback(_EXCEPTION_POINTERS*   excp)
 {
     CCrashStack crashStack(excp);
@@ -29,12 +29,14 @@ long __stdcall   callback(_EXCEPTION_POINTERS*   excp)
 
     return   EXCEPTION_EXECUTE_HANDLER;
 }
+#endif
 
 
 int main(int argc, char *argv[])
 {
+#if 0
     SetUnhandledExceptionFilter(callback);
-
+#endif
     //running
     QApplication a(argc, argv);
     MainWindow w;

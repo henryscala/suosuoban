@@ -2,6 +2,21 @@
 #include <QPainterPath>
 #include "geom.h"
 
+QMyPathItem::QMyPathItem(int penWidth, QColor penColor, QGraphicsScene *parent)
+{
+    if (parent) {
+        parent->addItem(this);
+    }
+
+
+    QPen tPen ;
+    tPen.setWidth(penWidth);
+    tPen.setColor(penColor);
+    this->setPen(tPen);
+
+
+}
+
 QMyPathItem::QMyPathItem()
 {
 
