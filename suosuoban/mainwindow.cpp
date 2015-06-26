@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "history.h"
 #include <QtWidgets>
+#include "configdialog.h"
 
 #include <cassert>
 using namespace std;
@@ -87,6 +88,8 @@ void MainWindow::createActions()
     connect(incWidthAction,SIGNAL(triggered()),this,SLOT(changeSceneSize()));
     decWidthAction =  new QAction(tr("D&ecrease Width"),this);
     connect(decWidthAction,SIGNAL(triggered()),this,SLOT(changeSceneSize()));
+    settingsAction = new QAction(tr("Settings..."),this);
+    connect(settingsAction,SIGNAL(triggered()),this,SLOT(settings()));
 
     colorPenAction = new QAction(tr("&Pen"),this);
     colorPenAction->setData((int)COLOR_TYPE_PEN);
@@ -191,6 +194,8 @@ void MainWindow::createMenus()
     viewMenu->addAction(decHeightAction);
     viewMenu->addAction(incWidthAction);
     viewMenu->addAction(decWidthAction);
+    viewMenu->addSeparator();
+    viewMenu->addAction(settingsAction);
 
 
 
@@ -339,6 +344,52 @@ void MainWindow::helpAbout()
     QMessageBox::about(this,tr("Suosuoban, by Qinmishu.org"),text);
 }
 
+void MainWindow::settings()
+{
+    qDebug() << "settings called";
+    ConfigDialog* dialog = new ConfigDialog(this);
+
+
+    QFile loadFile(Config::CONFIG_FILE_NAME);
+
+    if (!loadFile.open(QIODevice::ReadOnly)) {
+        qWarning("Couldn't open  file.");
+        return ;
+    }
+
+    QByteArray data = loadFile.readAll();
+    loadFile.close();
+    QString strData(data);
+    dialog->setText(strData);
+
+    dialog->exec();
+
+    if (dialog->result() == QDialog::Accepted){
+        qDebug() << "save config " ;
+        QFile saveFile(Config::CONFIG_FILE_NAME);
+
+        if (!saveFile.open(QIODevice::WriteOnly)) {
+            qWarning("Couldn't open save file.");
+            return ;
+        }
+
+        strData=dialog->getText();
+
+
+        saveFile.write(strData.toUtf8());
+        saveFile.close();
+        Config::reload();
+
+        scene->configChange();
+
+    } else {
+        qDebug() << "not save config " ;
+    }
+
+
+    delete dialog;
+}
+
 void MainWindow::canvasColorChange()
 {
 
@@ -399,7 +450,7 @@ void MainWindow::undoRedo()
         }
 
         const history::PolyLineOp &op=history::undo();
-        scene->undo(op);
+        scene->undoRedo(op,true);
         updateActionsState();
         return;
     }
@@ -411,7 +462,7 @@ void MainWindow::undoRedo()
         }
 
         const history::PolyLineOp &op=history::redo();
-        scene->redo(op);
+        scene->undoRedo(op,false);
         updateActionsState();
         return;
     }

@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     myalgorithm.cpp \
     ccrashstack.cpp \
     persistence.cpp \
-    history.cpp
+    history.cpp \
+    configdialog.cpp
 
 HEADERS  += mainwindow.h \
     geom.h \
@@ -41,7 +42,8 @@ HEADERS  += mainwindow.h \
     myalgorithm.h \
     ccrashstack.h \
     persistence.h \
-    history.h
+    history.h \
+    configdialog.h
 
 FORMS    += mainwindow.ui \
-    canvaswidget.ui
+    configdialog.ui

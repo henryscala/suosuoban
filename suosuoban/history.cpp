@@ -40,12 +40,12 @@ static void clearList(QList<history::PolyLineOp>& list){
 
 }
 
-void history::addPolyLine(PolyLine &pl)
-{
+//line operation
+static void lineOp(PolyLine &pl,history::PolyLineOpTypes type){
     clearList(redoList);
 
     history::PolyLineOp op;
-    op.opType = history::ADD;
+    op.opType = type;
     PolyLine* plCopy = new PolyLine;
     *plCopy = pl;
     op.polyLineCluster << plCopy;
@@ -54,44 +54,42 @@ void history::addPolyLine(PolyLine &pl)
     if (undoList.size() > Config::instance()->numHistory()){
         removeHeadOp(undoList);
     }
-
-
 }
 
-
-void history::delPolyLine(PolyLine &pl)
-{
+static void clusterOp(PolyLineCluster& plc,history::PolyLineOpTypes type){
     clearList(redoList);
 
     history::PolyLineOp op;
-    op.opType = history::DEL;
-    PolyLine* plCopy = new PolyLine;
-    *plCopy = pl;
-    op.polyLineCluster << plCopy;
-    undoList << op;
-
-    if (undoList.size() > Config::instance()->numHistory()){
-        removeHeadOp(undoList);
-    }
-
-
-}
-
-
-void history::delPolyLineCluster(PolyLineCluster &plc)
-{
-    clearList(redoList);
-
-    history::PolyLineOp op;
-    op.opType = history::DEL_CLUSTER;
+    op.opType = type;
     op.polyLineCluster = plc;
     undoList << op;
 
     if (undoList.size() > Config::instance()->numHistory()){
         removeHeadOp(undoList);
     }
+}
+
+void history::addPolyLine(PolyLine &pl)
+{
+    lineOp(pl,history::ADD_LINE);
+}
 
 
+void history::delPolyLine(PolyLine &pl)
+{
+    lineOp(pl,history::DEL_LINE);
+
+}
+
+void history::addPolyLineCluster(PolyLineCluster& plc){
+    clusterOp(plc,history::ADD_CLUSTER);
+}
+
+
+
+void history::delPolyLineCluster(PolyLineCluster &plc)
+{
+    clusterOp(plc,history::DEL_CLUSTER);
 }
 
 

@@ -6,7 +6,7 @@
 
 namespace history {
     enum PolyLineOpTypes{
-        ADD,DEL,DEL_CLUSTER
+        ADD_LINE,DEL_LINE,ADD_CLUSTER,DEL_CLUSTER
     };
 
     struct PolyLineOp{
@@ -17,6 +17,7 @@ namespace history {
     void addPolyLine(PolyLine& pl);
     void delPolyLine(PolyLine& pl);
     void delPolyLineCluster(PolyLineCluster& plc);
+    void addPolyLineCluster(PolyLineCluster& plc);
     bool isUndoable();
     bool isRedoable();
     const PolyLineOp& undo();

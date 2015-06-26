@@ -2,9 +2,11 @@
 #define CONFIG_H
 #include <QSettings>
 #include <QColor>
+#include <QString>
 
 QColor hexStrToColor(QString strColor);
 QString colorToHexStr(QColor color);
+
 
 class Config
 {
@@ -14,6 +16,7 @@ private:
     Config();
     ~Config();
 public:
+    static void reload();
     static Config *instance();
 
     double minGap();
@@ -39,6 +42,7 @@ public:
 
     int numHistory();
     void numHistory(int val);
+    static const char* CONFIG_FILE_NAME;
 };
 
 

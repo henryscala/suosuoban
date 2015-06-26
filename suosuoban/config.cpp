@@ -3,6 +3,7 @@
 
 
 Config* Config::config=NULL;
+const char * Config::CONFIG_FILE_NAME = "suosuoban.ini";
 
 QString widthTwo(QString str){
     if (str.length()==0){
@@ -44,7 +45,17 @@ QString colorToHexStr(QColor color){
 Config::Config()
 {
     settings = new
-            QSettings ("suosuoban.ini",QSettings::IniFormat);
+            QSettings (CONFIG_FILE_NAME,QSettings::IniFormat);
+
+    //make sure the config file contains all the configs
+    this->contourPadding(this->contourPadding());
+    this->clusterColor(this->clusterColor());
+    this->penColor(this->penColor());
+    this->backColor(this->backColor());
+    this->numHistory(this->numHistory());
+    this->penWidth(this->penWidth());
+    this->minGap(this->minGap());
+    this->minAngle(this->minAngle());
 }
 
 Config::~Config()
@@ -52,9 +63,16 @@ Config::~Config()
     delete settings;
 }
 
+
+
 int Config::contourPadding()
 {
     return settings->value("geometry/contourpadding",20).toInt();
+}
+
+void Config::contourPadding(int val)
+{
+    settings->setValue("geometry/contourpadding",val);
 }
 
 QColor Config::clusterColor()
@@ -104,9 +122,19 @@ int Config::penWidth(){
     return settings->value("canvas/penwidth",5).toInt();
 }
 
+void Config::penWidth(int val)
+{
+    settings->setValue("canvas/penwidth",val);
+}
+
 double Config::minGap()
 {
     return settings->value("geometry/mingap",6).toDouble();
+}
+
+void Config::minGap(double val)
+{
+    settings->setValue("geometry/mingap",val);
 }
 
 double Config::minAngle()
@@ -114,9 +142,23 @@ double Config::minAngle()
     return settings->value("geometry/minangle",9).toDouble();
 }
 
+void Config::minAngle(double val)
+{
+    settings->setValue("geometry/minangle",val);
+}
+
 Config* Config::instance(){
     if (!config){
         config = new Config();
     }
     return config;
+}
+
+void Config::reload()
+{
+    if (config){
+        delete config;
+        config=NULL;
+    }
+
 }

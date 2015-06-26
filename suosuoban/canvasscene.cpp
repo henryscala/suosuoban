@@ -58,7 +58,7 @@ bool CanvasScene::readFile(QString fileName)
         addPathItem(pathClusters,item);
     }
     calcContour();
-
+    return true;
 }
 
 void CanvasScene::clearPathClusters(PathClusters& clusters){
@@ -157,11 +157,7 @@ void CanvasScene::delCluster()
 
         //undo/redo handling
         PolyLineCluster plCluster;
-        for (int k=0; k<cluster->size();k++){
-            PolyLine *polyLine = new PolyLine();
-            *polyLine = (*cluster)[k]->points;
-            plCluster << polyLine;
-        }
+        pathClusterToPolylineCluster(*cluster,plCluster);
         history::delPolyLineCluster(plCluster);
 
         clearPathCluster(&cluster);
@@ -170,83 +166,94 @@ void CanvasScene::delCluster()
     calcContour();
 }
 
-void CanvasScene::undo(const history::PolyLineOp &op)
+void CanvasScene::undoRedo(const history::PolyLineOp &op, bool isUndo)
 {
     PolyLine* pl;
     QMyPathItem* item;
+    const PolyLineCluster& cluster=op.polyLineCluster;
+
+#define del_line  { \
+    pl=op.polyLineCluster[0]; \
+    item=findPathItem(*pl); \
+    if(item){ \
+        removePathItem(pathClusters,item); \
+        removeEmptyCluster(); \
+    } \
+}
+
+#define add_line  { \
+    pl=op.polyLineCluster[0]; \
+    item=createPathItem(); \
+    item->points = *pl; \
+    item->setSelfPath(false,false); \
+    addPathItem(pathClusters,item); \
+}
+
+#define add_cluster { \
+    for (int i=0;i<cluster.size();i++){ \
+        pl=cluster.at(i); \
+        item=createPathItem(); \
+        item->points = *pl; \
+        item->setSelfPath(false,false); \
+        addPathItem(pathClusters,item); \
+    } \
+    rebuildPathClusters(); \
+}
+
+#define del_cluster { \
+    for (int i=0;i<cluster.size();i++){ \
+        pl=cluster.at(i); \
+        item=findPathItem(*pl); \
+        if (item){ \
+            removePathItem(pathClusters,item); \
+        } \
+    } \
+    removeEmptyCluster(); \
+    rebuildPathClusters(); \
+}
+
+#define first_or_second( execFirst, firstFunc, secondFunc ) { \
+    if ( (execFirst) ){ \
+        firstFunc; \
+    } else { \
+        secondFunc; \
+    } \
+}
 
     switch(op.opType){
-    case history::ADD:
-        pl=op.polyLineCluster[0];
-        item=findPathItem(*pl);
-        if(item){
-            removePathItem(pathClusters,item);
-            removeEmptyCluster();
-        }
+    case history::ADD_LINE:
+        first_or_second(isUndo,del_line,add_line);
         break;
-    case history::DEL:
-        pl=op.polyLineCluster[0];
-        item=createPathItem();
-        item->points = *pl;
-        item->setSelfPath(false,false);
-        addPathItem(pathClusters,item);
+    case history::DEL_LINE:
+        first_or_second(!isUndo,del_line,add_line);
+        break;
+    case history::ADD_CLUSTER:
+        first_or_second(isUndo,del_cluster,add_cluster);
         break;
     case history::DEL_CLUSTER:
-        const PolyLineCluster& cluster=op.polyLineCluster;
-        for (int i=0;i<cluster.size();i++){
-            pl=cluster.at(i);
-            item=createPathItem();
-            item->points = *pl;
-            item->setSelfPath(false,false);
-            addPathItem(pathClusters,item);
-        }
-        rebuildPathClusters();
-
+        first_or_second(!isUndo,del_cluster,add_cluster);
         break;
     }
 
     calcContour();
 }
 
-void CanvasScene::redo(const history::PolyLineOp &op)
+void CanvasScene::configChange()
 {
-    PolyLine* pl;
-    QMyPathItem* item;
-
-    switch(op.opType){
-    case history::DEL:
-        pl=op.polyLineCluster[0];
-        item=findPathItem(*pl);
-        if(item){
-            removePathItem(pathClusters,item);
-            removeEmptyCluster();
-        }
-        break;
-    case history::ADD:
-        pl=op.polyLineCluster[0];
-        item=createPathItem();
-        item->points = *pl;
-        item->setSelfPath(false,false);
-        addPathItem(pathClusters,item);
-        break;
-    case history::DEL_CLUSTER:
-        const PolyLineCluster& cluster=op.polyLineCluster;
-        for (int i=0;i<cluster.size();i++){
-            pl=cluster.at(i);
-            item=findPathItem(*pl);
-            if(item){
-                removePathItem(pathClusters,item);
-            }
-
-        }
-        removeEmptyCluster();
-        rebuildPathClusters();
-
-        break;
-    }
-
+    rebuildPathClusters();
     calcContour();
+
+    //reset pen width
+    QList<QMyPathItem *> items;
+    getAllPathItems(items);
+    for (int i=0;i<items.size();i++){
+        QMyPathItem *item = items[i];
+        QPen pen = item->pen();
+        pen.setWidth(Config::instance()->penWidth());
+        item->setPen(pen);
+    }
 }
+
 
 
 
@@ -427,7 +434,18 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
                         //in this way clusters in pathClusters keeps stable to avoid crash
                         *orphanCluster << newPathItem;
                     }
+
+                    //undo redo handling
+                    PolyLineCluster plc;
+                    pathClusterToPolylineCluster(*orphanCluster,plc);
+                    history::addPolyLineCluster(plc);
+
                 } else {//move
+                    //move action is like first delete and later add
+                    //undo redo handling
+                    PolyLineCluster plcOld;
+                    pathClusterToPolylineCluster(*cluster,plcOld);
+                    history::delPolyLineCluster(plcOld);
 
                     for (int k=0; k<cluster->size();k++){
                         QMyPathItem* pathItem = (*cluster)[k];
@@ -436,6 +454,10 @@ void CanvasScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
                     }
 
+                    //undo redo handling
+                    PolyLineCluster plcNew;
+                    pathClusterToPolylineCluster(*cluster,plcNew);
+                    history::addPolyLineCluster(plcNew);
                 }
             }
 
@@ -756,4 +778,14 @@ QMyPathItem *CanvasScene::createPathItem()
                                         this);
 
     return item;
+}
+
+
+void pathClusterToPolylineCluster(const PathCluster &pc, PolyLineCluster &plc)
+{
+    for (int k=0; k<pc.size();k++){
+        PolyLine *polyLine = new PolyLine();
+        *polyLine = pc[k]->points;
+        plc << polyLine;
+    }
 }

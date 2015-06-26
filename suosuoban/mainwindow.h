@@ -6,6 +6,7 @@
 #include <QtWidgets>
 #include "canvasscene.h"
 #include "grid.h"
+#include "config.h"
 
 namespace Ui {
 class MainWindow;
@@ -34,6 +35,7 @@ public slots:
     void readFile();
     void changeSceneSize();
     void helpAbout();
+    void settings();
 protected:
 
     void createActions();
@@ -62,6 +64,7 @@ private:
     QAction *decHeightAction;
     QAction *incWidthAction;
     QAction *decWidthAction;
+    QAction *settingsAction;
 
     QAction *selectAllAction;
     QAction *delClusterAction;

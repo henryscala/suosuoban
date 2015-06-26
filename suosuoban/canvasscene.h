@@ -10,6 +10,8 @@
 typedef QList<QMyPathItem*> PathCluster;
 typedef QList<PathCluster*> PathClusters;
 
+
+
 enum CanvasMode{
     MODE_DRAW,
     MODE_CLUSTER,
@@ -24,7 +26,7 @@ enum CanvasColorType{
     COLOR_TYPE_MAX
 };
 
-
+void pathClusterToPolylineCluster(const PathCluster& pc,PolyLineCluster& plc);
 
 class CanvasScene: public QGraphicsScene
 {
@@ -41,8 +43,8 @@ public:
     void setShowCluster(bool show);
     void selectAll();
     void delCluster();
-    void undo(const history::PolyLineOp &op);
-    void redo(const history::PolyLineOp &op);
+    void undoRedo(const history::PolyLineOp &op,bool isUndo);
+    void configChange();
 
     QList<int> selectedClusterIndices;
     PathClusters pathClusters;
