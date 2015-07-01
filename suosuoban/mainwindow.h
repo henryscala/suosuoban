@@ -7,6 +7,7 @@
 #include "canvasscene.h"
 #include "grid.h"
 #include "config.h"
+#include "mylocale.h"
 
 namespace Ui {
 class MainWindow;
@@ -20,7 +21,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void resizeEvent(QResizeEvent *event);
-
+    QString defaultLocale;
+    // loads a language by the given language shortcur (e.g. de, en)
+    void loadLanguage(const QString& rLanguage);
 public slots:
 
     void canvasModeChange();
@@ -36,20 +39,30 @@ public slots:
     void changeSceneSize();
     void helpAbout();
     void settings();
+    // this slot is called by the language menu actions
+    void slotLanguageChanged(QAction* action);
 protected:
-
+    void createActionsUi();
     void createActions();
     void createMenus();
     void createToolBar();
     QIcon createIcon(QColor color);
 
     void contextMenuEvent(QContextMenuEvent *event);
+    // this event is called, when a new translator is loaded or the system language is changed
+    void changeEvent(QEvent*);
+
+
+
+    // creates the language menu dynamically from the content of m_langPath
+    void createLanguageMenu(void);
 
 private:
     Ui::MainWindow *ui;
 
     CanvasScene* scene;
     QGraphicsView* view;
+    QToolBar *toolBar;
 
     QAction *colorPenAction;
     QAction *colorBackAction;
@@ -76,6 +89,14 @@ private:
     QAction *exitAction;
 
     QAction *helpAboutAction;
+    QList<QAction*> allActions;
+
+
+    QTranslator m_translator; // contains the translations for this application
+
+    QString m_currLang; // contains the currently loaded language
+    QString m_langPath; // Path of language files. This is always fixed to /languages.
+
 };
 
 

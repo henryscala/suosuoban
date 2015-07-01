@@ -11,6 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = suosuoban
 TEMPLATE = app
 
+
 #added by me
 QMAKE_CXXFLAGS_RELEASE += -g
 QMAKE_CFLAGS_RELEASE += -g
@@ -19,6 +20,8 @@ QMAKE_CXXFLAGS_DEBUG += -g
 QMAKE_CFLAGS_DEBUG += -g
 QMAKE_LFLAGS_DEBUG = -mthreads
 
+#added by me
+TRANSLATIONS = languages/lang_en.ts  languages/lang_zh.ts
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -31,7 +34,8 @@ SOURCES += main.cpp\
     ccrashstack.cpp \
     persistence.cpp \
     history.cpp \
-    configdialog.cpp
+    configdialog.cpp \
+    mylocale.cpp
 
 HEADERS  += mainwindow.h \
     geom.h \
@@ -43,7 +47,8 @@ HEADERS  += mainwindow.h \
     ccrashstack.h \
     persistence.h \
     history.h \
-    configdialog.h
+    configdialog.h \
+    mylocale.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui

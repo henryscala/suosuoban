@@ -41,6 +41,9 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     MainWindow w;
     w.setGeometry(100,100,800,600);
+
+    w.loadLanguage(w.defaultLocale);
+
     w.show();
 
     return a.exec();

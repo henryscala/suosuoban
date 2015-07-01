@@ -21,15 +21,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     view = new QGraphicsView(scene);
+    toolBar = this->addToolBar("Tools");
 
     setCentralWidget(view);
     setWindowTitle(tr("Suosuoban, by Qinmishu.org"));
     setUnifiedTitleAndToolBarOnMac(true);
 
-    createActions();
-    updateActionsState();
-    createMenus();
-    createToolBar();
+    createActionsUi();
+
 
     connect(scene,SIGNAL(sceneChanged()),this,SLOT(updateActionsState()));
 }
@@ -47,6 +46,7 @@ void MainWindow::resizeEvent(QResizeEvent *event){
 void MainWindow::createActions()
 {
 
+    QString icons = QApplication::applicationDirPath() + "/icons";
 
 
     drawModeAction = new QAction(tr("&Draw"),this);
@@ -54,94 +54,118 @@ void MainWindow::createActions()
     drawModeAction->setChecked(true);
     drawModeAction->setData((int)MODE_DRAW);
     drawModeAction->setShortcut(tr("D"));
-    drawModeAction->setIcon(QIcon("icons/pen.png"));
+    drawModeAction->setIcon(QIcon(icons+"/pen.png"));
     connect(drawModeAction,SIGNAL(triggered()),this,SLOT(canvasModeChange()));
+    allActions << drawModeAction;
 
     eraseModeAction = new QAction(tr("&Erase"),this);
     eraseModeAction->setCheckable(true);
     eraseModeAction->setData((int)MODE_ERASE);
     eraseModeAction->setShortcut(tr("E"));
-    eraseModeAction->setIcon(QIcon("icons/erase.png"));
+    eraseModeAction->setIcon(QIcon(icons+"/erase.png"));
     connect(eraseModeAction,SIGNAL(triggered()),this,SLOT(canvasModeChange()));
+    allActions << eraseModeAction ;
 
     clusterModeAction = new QAction(tr("&Cluster"),this);
     clusterModeAction->setCheckable(true);
     clusterModeAction->setData((int)MODE_CLUSTER);
     clusterModeAction->setShortcut(tr("C"));
-    clusterModeAction->setIcon(QIcon("icons/bubble.png"));
+    clusterModeAction->setIcon(QIcon(icons+"/bubble.png"));
     connect(clusterModeAction,SIGNAL(triggered()),this,SLOT(canvasModeChange()));
+    allActions << clusterModeAction;
 
     showHideClusterAction = new QAction(tr("&Show Cluster"),this);
     showHideClusterAction->setCheckable(true);
     showHideClusterAction->setChecked(true);//checked means Showing Cluster
     showHideClusterAction->setShortcut(tr("H"));
-    showHideClusterAction->setIcon(QIcon("icons/eye.png"));
+    showHideClusterAction->setIcon(QIcon(icons+"/eye.png"));
     connect(showHideClusterAction,SIGNAL(triggered()),this,SLOT(showClusterChange()));
+    allActions << showHideClusterAction;
 
     incHeightAction =  new QAction(tr("&Increase Height"),this);
     incHeightAction->setShortcut(tr("]"));
     connect(incHeightAction,SIGNAL(triggered()),this,SLOT(changeSceneSize()));
+    allActions << incHeightAction;
+
     decHeightAction =  new QAction(tr("&Decrease Height"),this);
     decHeightAction->setShortcut(tr("["));
     connect(decHeightAction,SIGNAL(triggered()),this,SLOT(changeSceneSize()));
+    allActions << decHeightAction;
+
     incWidthAction =  new QAction(tr("I&ncrease Width"),this);
     connect(incWidthAction,SIGNAL(triggered()),this,SLOT(changeSceneSize()));
+    allActions << incWidthAction;
+
     decWidthAction =  new QAction(tr("D&ecrease Width"),this);
     connect(decWidthAction,SIGNAL(triggered()),this,SLOT(changeSceneSize()));
+    allActions << decWidthAction;
+
     settingsAction = new QAction(tr("Settings..."),this);
     connect(settingsAction,SIGNAL(triggered()),this,SLOT(settings()));
+    allActions << settingsAction;
 
     colorPenAction = new QAction(tr("&Pen"),this);
     colorPenAction->setData((int)COLOR_TYPE_PEN);
     colorPenAction->setIcon(createIcon(Config::instance()->penColor()));
     colorPenAction->setShortcut(tr("P"));
     connect(colorPenAction,SIGNAL(triggered()),this,SLOT(canvasColorChange()));
+    allActions <<colorPenAction;
 
     colorBackAction = new QAction(tr("&Background"),this);
     colorBackAction->setData((int)COLOR_TYPE_BACK);
     colorBackAction->setIcon(createIcon(Config::instance()->backColor()));
     connect(colorBackAction,SIGNAL(triggered()),this,SLOT(canvasColorChange()));
+    allActions << colorBackAction;
 
     colorClusterAction = new QAction(tr("&Cluster"),this);
     colorClusterAction->setData((int)COLOR_TYPE_CLUSTER);
     colorClusterAction->setIcon(createIcon(Config::instance()->clusterColor()));
     connect(colorClusterAction,SIGNAL(triggered()),this,SLOT(canvasColorChange()));
+    allActions <<colorClusterAction;
 
     selectAllAction = new QAction(tr("Select &All"),this);
     selectAllAction->setShortcut(tr("A"));
-    selectAllAction->setIcon(QIcon("icons/hand.png"));
+    selectAllAction->setIcon(QIcon(icons+"/hand.png"));
     connect(selectAllAction,SIGNAL(triggered()),this, SLOT(selectAll()));
+    allActions <<selectAllAction;
+
     delClusterAction = new QAction(tr("&Delete"),this);
     delClusterAction->setShortcut(tr("X"));
     delClusterAction->setIcon(style()->standardIcon(QStyle::SP_DialogDiscardButton));
     connect(delClusterAction,SIGNAL(triggered()),this,SLOT(delCluster()));
+    allActions <<delClusterAction;
 
     undoAction =  new QAction(tr("&Undo"),this);
     undoAction->setIcon( style()->standardIcon(QStyle::SP_ArrowBack) );
     undoAction->setShortcut(tr("U"));
     connect(undoAction,SIGNAL(triggered()),this, SLOT(undoRedo()));
+    allActions <<undoAction;
 
     redoAction =  new QAction(tr("&Redo"),this);
     redoAction->setIcon( style()->standardIcon(QStyle::SP_ArrowForward) );
     redoAction->setShortcut(tr("R"));
     connect(redoAction,SIGNAL(triggered()),this, SLOT(undoRedo()));
-
+    allActions <<redoAction;
 
     saveAction = new QAction(tr("&Save"),this);
     saveAction->setShortcut(tr("Ctrl+S"));
     saveAction->setIcon( style()->standardIcon(QStyle::SP_DialogSaveButton) );
     connect(saveAction,SIGNAL(triggered()),this,SLOT(saveFile()));
+    allActions <<saveAction;
 
     openAction = new QAction(tr("&Open"),this);
     openAction->setShortcut(tr("Ctrl+O"));
     openAction->setIcon( style()->standardIcon(QStyle::SP_DialogOpenButton) );
     connect(openAction,SIGNAL(triggered()),this,SLOT(readFile()));
-    //saveAsAction = new QAction(tr("Save &As..."),this);
+    allActions <<openAction;
+
     exitAction = new QAction(tr("e&Xit"),this);
     connect(exitAction,SIGNAL(triggered()),this,SLOT(close()));
+    allActions <<exitAction;
 
     helpAboutAction = new QAction(tr("&About..."),this);
     connect(helpAboutAction,SIGNAL(triggered()),this,SLOT(helpAbout()));
+    allActions <<helpAboutAction;
 }
 
 void MainWindow::updateActionsState()
@@ -168,12 +192,14 @@ void MainWindow::updateActionsState()
 
 void MainWindow::createMenus()
 {
+
     QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(saveAction);
     //fileMenu->addAction(saveAsAction);
     fileMenu->addAction(openAction);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
+
 
     QMenu* editMenu = menuBar()->addMenu(tr("&Edit"));
     editMenu->addAction(undoAction);
@@ -211,7 +237,7 @@ void MainWindow::createMenus()
 
 void MainWindow::createToolBar()
 {
-    QToolBar *toolBar = this->addToolBar(tr("Tools"));
+
     toolBar->addAction(colorPenAction);
     toolBar->addAction(drawModeAction);
     toolBar->addAction(eraseModeAction);
@@ -239,6 +265,122 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event)
     contextMenu.addAction(redoAction);
 
     contextMenu.exec(event->globalPos());
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    if(0 != event) {
+        switch(event->type()) {
+        // this event is send if a translator is loaded
+        case QEvent::LanguageChange:
+            qDebug() << "language changed";
+            ui->retranslateUi(this);
+            break;
+
+            // this event is send, if the system, language changes
+        case QEvent::LocaleChange:
+        {
+            qDebug() << "locale changed";
+            QString locale = QLocale::system().name();
+            locale.truncate(locale.lastIndexOf('_'));
+            loadLanguage(locale);
+        }
+            break;
+        }
+    }
+    QMainWindow::changeEvent(event);
+}
+
+void switchTranslator(QTranslator& translator, const QString& filename)
+{
+    // remove the old translator
+    qApp->removeTranslator(&translator);
+
+    // load the new translator
+    qDebug() << "file name " << filename;
+    if(translator.load(filename)){
+        qDebug() << "file name load success " << filename;
+        qApp->installTranslator(&translator);
+    }
+}
+
+void MainWindow::loadLanguage(const QString &rLanguage)
+{
+    if(m_currLang != rLanguage) {
+        m_currLang = rLanguage;
+        QLocale locale = QLocale(m_currLang);
+        QLocale::setDefault(locale);
+        QString languageName = QLocale::languageToString(locale.language());
+
+        QString langDir = m_langPath + "/";
+        switchTranslator(m_translator, langDir + QString("lang_%1.qm").arg(rLanguage));
+
+        qDebug() << "Current Language changed to " << languageName << " " << m_currLang;
+
+        //regenerate ui
+        for (int i=0;i<this->allActions.size();i++){
+            delete allActions[i];
+        }
+        allActions.clear();
+        menuBar()->clear();
+        toolBar->clear();
+        createActionsUi();
+
+    }
+}
+
+//refer to https://wiki.qt.io/How_to_create_a_multi_language_application
+void MainWindow::createLanguageMenu()
+{
+
+
+    QMenu* langMenu = menuBar()->addMenu(tr("&Language"));
+    QActionGroup* langGroup = new QActionGroup(langMenu);
+    langGroup->setExclusive(true);
+
+    connect(langGroup, SIGNAL (triggered(QAction *)), this, SLOT (slotLanguageChanged(QAction *)));
+
+    // format systems language
+    defaultLocale = QLocale::system().name(); // e.g. "de_DE"
+
+    defaultLocale.truncate(defaultLocale.lastIndexOf('_')); // e.g. "de"
+    qDebug() << "system language " << defaultLocale;
+
+    m_langPath = QApplication::applicationDirPath() + "/languages" ;
+
+    qDebug() << "lang path = " << m_langPath;
+    QDir dir(m_langPath);
+    QStringList fileNames = dir.entryList(QStringList("lang*.qm"));
+
+
+    for (int i = 0; i < fileNames.size(); ++i) {
+        // get locale extracted by filename
+        QString locale;
+        locale = fileNames[i]; // "TranslationExample_de.qm"
+        locale.truncate(locale.lastIndexOf('.')); // "TranslationExample_de"
+        locale.remove(0, locale.indexOf('_') + 1); // "de"
+
+        QString lang = QLocale::languageToString(QLocale(locale).language());
+        qDebug() << "language option " << lang << " " << locale;
+        QIcon ico(QString("%1/%2.png").arg(m_langPath).arg(locale));
+
+        QAction *action = new QAction(ico, lang, this);
+        action->setCheckable(true);
+        action->setData(locale);
+
+
+        langMenu->addAction(action);
+        langGroup->addAction(action);
+        allActions << action;
+
+
+        // set default translators and language checked
+        if (defaultLocale == locale)
+        {
+            action->setChecked(true);
+        }
+    }
+
 }
 
 QIcon MainWindow::createIcon(QColor color)
@@ -388,6 +530,26 @@ void MainWindow::settings()
 
 
     delete dialog;
+}
+
+void MainWindow::slotLanguageChanged(QAction *action)
+{
+    if(NULL != action) {
+        // load the language dependant on the action content
+        loadLanguage(action->data().toString());
+
+    }
+}
+
+void MainWindow::createActionsUi()
+{
+    createActions();
+    updateActionsState();
+    createMenus();
+
+
+    createToolBar();
+    createLanguageMenu();
 }
 
 void MainWindow::canvasColorChange()
