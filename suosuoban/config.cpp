@@ -1,5 +1,6 @@
 #include <cassert>
 #include "config.h"
+#include <QApplication>
 
 
 Config* Config::config=NULL;
@@ -45,7 +46,7 @@ QString colorToHexStr(QColor color){
 Config::Config()
 {
     settings = new
-            QSettings (CONFIG_FILE_NAME,QSettings::IniFormat);
+            QSettings (QApplication::applicationDirPath() + "/" + CONFIG_FILE_NAME,QSettings::IniFormat);
 
     //make sure the config file contains all the configs
     this->contourPadding(this->contourPadding());
