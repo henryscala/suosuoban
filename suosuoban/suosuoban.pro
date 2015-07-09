@@ -12,13 +12,6 @@ TARGET = suosuoban
 TEMPLATE = app
 
 
-#added by me
-QMAKE_CXXFLAGS_RELEASE += -g
-QMAKE_CFLAGS_RELEASE += -g
-QMAKE_LFLAGS_RELEASE = -mthreads
-QMAKE_CXXFLAGS_DEBUG += -g
-QMAKE_CFLAGS_DEBUG += -g
-QMAKE_LFLAGS_DEBUG = -mthreads
 
 #added by me
 TRANSLATIONS = languages/lang_en.ts  languages/lang_zh.ts
@@ -31,7 +24,6 @@ SOURCES += main.cpp\
     qmypathitem.cpp \
     grid.cpp \
     myalgorithm.cpp \
-    ccrashstack.cpp \
     persistence.cpp \
     history.cpp \
     configdialog.cpp \
@@ -44,7 +36,6 @@ HEADERS  += mainwindow.h \
     qmypathitem.h \
     grid.h \
     myalgorithm.h \
-    ccrashstack.h \
     persistence.h \
     history.h \
     configdialog.h \

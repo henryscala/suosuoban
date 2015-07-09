@@ -353,11 +353,11 @@ void CanvasScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
             for (int i=0; i<closeClusters.size();i++){
                 PathCluster* cluster = closeClusters[i];
 
-                for (int k=cluster->size()-1; k >=0 ; k--){
-                    QMyPathItem* item = (*cluster)[k];
+                for (int k=cluster->size()-1; k >=0 && k < cluster->size(); k--){//k < cluster->size() is for avoiding crashes
+                    QMyPathItem* item = (*cluster)[k];//there is crash here for index out of range, likely because that removePathItem changed the cluster
                     if (isPathIntersect(item->points, currPathItem->points)){
                         history::delPolyLine(item->points);
-                        removePathItem(pathClusters,item);
+                        removePathItem(pathClusters,item);//it may cause the cluster's size to zero in the case that cluster is divided to two sub-clusters
                     }
                 }
             }
@@ -640,7 +640,7 @@ void CanvasScene::removePathItem(PathClusters &clusters, QMyPathItem *pathItem)
     delete pathItem;
     if (cluster->size() <=0){
         //postpone remove because I don't want to invalidate old clusters referenced outside the function
-        cluster->clear();//make it size 0
+        //its size is already 0
 
     } else if (cluster->size() >=2){//check whether need to divide the cluster
         PathClusters subClusters;
