@@ -22,24 +22,18 @@ SOURCES += main.cpp\
     config.cpp \
     canvasscene.cpp \
     qmypathitem.cpp \
-    grid.cpp \
-    myalgorithm.cpp \
     persistence.cpp \
     history.cpp \
-    configdialog.cpp \
-    mylocale.cpp
+    configdialog.cpp
 
 HEADERS  += mainwindow.h \
     geom.h \
     config.h \
     canvasscene.h \
     qmypathitem.h \
-    grid.h \
-    myalgorithm.h \
     persistence.h \
     history.h \
-    configdialog.h \
-    mylocale.h
+    configdialog.h
 
 FORMS    += mainwindow.ui \
     configdialog.ui

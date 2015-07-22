@@ -41,26 +41,7 @@ QRectF calcEncloseRect(const QList<QPointF> &points)
     return QRectF(QPointF(minx,miny),QPointF(maxx,maxy));
 }
 
-void fillCircle(QPointF point, qreal radius, Grid<unsigned char>& gridBoard){
-    QRectF rect=calcEncloseRect(point,radius);
-    int x,y;
-    for (x=round(rect.left());x<rect.right();x++){
-        for (y=round(rect.top());y<rect.bottom();y++){
-            QPointF p(x,y);
-            if (abs(p-point)<=radius){
-                unsigned char curValue = gridBoard.getValue(x,y);
-                if (curValue<=0) {
-                    curValue = 1;
-                } else if (curValue >= 255){
-                    curValue = 255;
-                } else {
-                    curValue ++;
-                }
-                gridBoard.setValue(x,y,curValue);
-            }
-        }
-    }
-}
+
 
 qreal abs(QPointF p){
     return sqrt(p.x() * p.x() + p.y() * p.y());

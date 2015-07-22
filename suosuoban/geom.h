@@ -2,8 +2,6 @@
 #define GEOM_H
 
 #include <QtWidgets>
-
-#include "grid.h"
 #include "config.h"
 
 #define MYINFINITY 0x7FFFFFFF
@@ -84,9 +82,6 @@ int nextIndex(const QList<T>& list, int currIndex){
 qreal minElem(const QList<qreal> &list);
 
 
-
-
-void fillCircle(QPointF point, qreal radius, Grid<unsigned char>& gridBoard);
 QRectF calcEncloseRect(QPointF point, qreal radius);
 QRectF calcEncloseRect(const QList<QPointF> &points);
 

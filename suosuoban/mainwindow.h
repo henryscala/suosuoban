@@ -5,9 +5,9 @@
 
 #include <QtWidgets>
 #include "canvasscene.h"
-#include "grid.h"
+
 #include "config.h"
-#include "mylocale.h"
+
 
 namespace Ui {
 class MainWindow;

@@ -734,7 +734,6 @@ void CanvasScene::excludeClustersFarAway(const PathClusters &clusters, const QMy
 
 void CanvasScene::removeEmptyCluster()
 {
-
     //remove empty cluster
     for (int i=pathClusters.size()-1; i>=0; i--){
         PathCluster* cluster = pathClusters[i];
